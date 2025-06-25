@@ -1,0 +1,32 @@
+name: Deploy Astro
+
+on:
+  repository_dispatch:
+    types: [build-deploy-astro]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Install Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Install deps
+        run: npm install
+
+      - name: Build Astro
+        run: npm run build
+
+      - name: Upload via FTP (contoh Plesk FTP)
+        uses: SamKirkland/FTP-Deploy-Action@v4
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          local-dir: dist
+          server-dir: /home/direktori/yathim.or.id/
