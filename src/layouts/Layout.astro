@@ -1,0 +1,52 @@
+---
+import SEO from "../components/SEO.astro";
+
+export interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+  type?: string;
+  canonical?: string;
+  keywords?: string;
+  author?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+  noindex?: boolean;
+  nofollow?: boolean;
+}
+
+const props = Astro.props;
+---
+
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/LOGO-YATHIM.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Microsoft Tiles -->
+    <meta name="msapplication-TileImage" content="/images/LOGO-YATHIM.png" />
+    <meta name="msapplication-TileColor" content="#0ea5e9" />
+    <meta name="msapplication-config" content="/browserconfig.xml" />
+
+    <meta name="generator" content={Astro.generator} />
+
+    <!-- SEO Component -->
+    <SEO {...props} />
+
+    <!-- Preload fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body class="font-sans bg-white text-gray-900 antialiased">
+    <slot />
+  </body>
+</html>

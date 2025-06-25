@@ -1,0 +1,35 @@
+{
+  "name": "Yayasan Taman Harapan Insan Mulia",
+  "short_name": "YATHIM",
+  "description": "Yayasan sosial yang bergerak dalam bidang pendidikan, kesehatan, dan pemberdayaan masyarakat untuk yatim dan dhuafa",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#0ea5e9",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/images/LOGO-YATHIM.png",
+      "sizes": "32x32",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/LOGO-YATHIM.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/LOGO-YATHIM.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["social", "charity", "education"],
+  "lang": "id",
+  "dir": "ltr",
+  "scope": "/",
+  "prefer_related_applications": false
+}

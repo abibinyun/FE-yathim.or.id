@@ -1,0 +1,72 @@
+---
+// Navbar.astro
+const currentPath = Astro.url.pathname;
+---
+
+<header class="shadow-sm bg-white sticky top-0 z-50">
+  <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+    <a href="/" class="flex items-center gap-3">
+      <div class="w-12 h-12 bg-primary-500 rounded-lg flex items-center justify-center p-1">
+        <img src="/images/LOGO-YATHIM.png" alt="logo-yayasan-taman-harapan-insan-mulia" class="w-24 h-24 object-contain" />
+      </div>
+      <div class="flex flex-col">
+        <span class="font-bold text-primary-700 text-lg leading-tight">Yayasan</span>
+        <span class="text-sm text-gray-600 leading-tight">Taman Harapan Insan Mulia</span>
+      </div>
+    </a>
+
+    <nav class="hidden md:flex gap-6">
+      <a href="/" class={`nav-link ${currentPath === "/" ? "nav-link-active" : ""}`}>Beranda</a>
+      <a href="/donasi" class={`nav-link ${currentPath.startsWith("/donasi") ? "nav-link-active" : ""}`}>Donasi</a>
+      <a href="/artikel" class={`nav-link ${currentPath.startsWith("/artikel") ? "nav-link-active" : ""}`}>Artikel</a>
+      <a href="/galeri" class={`nav-link ${currentPath.startsWith("/galeri") ? "nav-link-active" : ""}`}>Galeri</a>
+      <a href="/tentang" class={`nav-link ${currentPath.startsWith("/tentang") ? "nav-link-active" : ""}`}>Tentang Kami</a>
+    </nav>
+
+    <button class="md:hidden" id="menu-toggle">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="6" x2="21" y2="6"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Mobile menu -->
+  <div class="md:hidden hidden border-t" id="mobile-menu">
+    <div class="px-4 py-3 space-y-2 bg-gray-50">
+      <a href="/" class={`mobile-nav-link ${currentPath === "/" ? "mobile-nav-link-active" : ""}`}>Beranda</a>
+      <a href="/donasi" class={`mobile-nav-link ${currentPath.startsWith("/donasi") ? "mobile-nav-link-active" : ""}`}>Donasi</a>
+      <a href="/artikel" class={`mobile-nav-link ${currentPath.startsWith("/artikel") ? "mobile-nav-link-active" : ""}`}>Artikel</a>
+      <a href="/galeri" class={`mobile-nav-link ${currentPath.startsWith("/galeri") ? "mobile-nav-link-active" : ""}`}>Galeri</a>
+      <a href="/tentang" class={`mobile-nav-link ${currentPath.startsWith("/tentang") ? "mobile-nav-link-active" : ""}`}>Tentang Kami</a>
+    </div>
+  </div>
+</header>
+
+<style>
+  .nav-link {
+    @apply font-medium text-gray-700 hover:text-primary-600 transition-colors px-3 py-2 rounded-md;
+  }
+
+  .nav-link-active {
+    @apply text-primary-600 bg-primary-50;
+  }
+
+  .mobile-nav-link {
+    @apply block py-3 px-3 font-medium text-gray-700 hover:text-primary-600 hover:bg-white rounded-md transition-colors;
+  }
+
+  .mobile-nav-link-active {
+    @apply text-primary-600 bg-white;
+  }
+</style>
+
+<script>
+  const menuToggle = document.getElementById("menu-toggle");
+  const mobileMenu = document.getElementById("mobile-menu");
+
+  menuToggle?.addEventListener("click", () => {
+    mobileMenu?.classList.toggle("hidden");
+  });
+</script>

@@ -1,0 +1,649 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ShareButtons from "../../components/ShareButtons.astro";
+
+export async function getStaticPaths() {
+  // Fetch all programs to generate static paths
+  try {
+    const response = await fetch("https://laravel.yathim.or.id/api/campaigns/all/slug");
+    if (response.ok) {
+      const data = await response.json();
+      const campaigns = data.data || data || [];
+
+      // Ensure campaigns is an array
+      if (Array.isArray(campaigns)) {
+        return campaigns.map((campaign: any) => ({
+          params: { slug: campaign.slug },
+        }));
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching campaigns for static paths:", error);
+  }
+
+  // Return empty array if no campaigns or error
+  return [];
+}
+
+const { slug } = Astro.params;
+
+// Fetch campaign details from API
+let campaign = null;
+let banks = [];
+
+let STORAGE_URL = "https://laravel.yathim.or.id/storage";
+let SITE = "https://yathim.or.id";
+
+try {
+  const response = await fetch(`https://laravel.yathim.or.id/api/campaign/${slug}`);
+  if (response.ok) {
+    const data = await response.json();
+    campaign = data.data || data;
+  }
+} catch (error) {
+  console.error("Error fetching campaign:", error);
+}
+
+try {
+  const response = await fetch("https://laravel.yathim.or.id/api/bank-account");
+  if (response.ok) {
+    const data = await response.json();
+    banks = data.data || data || [];
+  }
+} catch (error) {
+  console.error("Error fetching banks:", error);
+}
+
+// Helper functions
+function formatCurrency(amount: number) {
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+function calculateProgress(collected: number, target: number) {
+  return Math.min((collected / target) * 100, 100);
+}
+
+// If campaign not found, return 404
+if (!campaign) {
+  return Astro.redirect("/404");
+}
+
+// Helper functions for SEO
+const truncateText = (text: string, maxLength: number) => {
+  if (!text) return "";
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength - 3).trim() + "...";
+};
+
+const cleanText = (text: string) => {
+  if (!text) return "";
+  return text
+    .replace(/\s+/g, " ")
+    .replace(/<[^>]*>/g, "")
+    .trim();
+};
+
+const formatDate = (dateString: string) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+  return date.toISOString();
+};
+
+// SEO optimized values
+const campaignTitle = cleanText(campaign.title || "");
+const campaignDescription = cleanText(campaign.description || "");
+const campaignImage = campaign.image;
+const fullImageUrl = campaignImage ? `${STORAGE_URL}/${campaignImage}` : `${SITE}/images/image-yathim.jpeg`;
+
+// Optimized meta values
+const seoTitle = truncateText(`${campaignTitle} - Yayasan Taman Harapan Insan Mulia`, 60);
+const seoDescription = truncateText(campaignDescription || `Mari bersama-sama membantu program ${campaignTitle} di Yayasan Taman Harapan Insan Mulia`, 160);
+const publishedTime = formatDate(campaign.created_at);
+const modifiedTime = formatDate(campaign.updated_at);
+---
+
+<BaseLayout title={seoTitle} description={seoDescription} image={fullImageUrl} type="article" publishedTime={publishedTime} modifiedTime={modifiedTime} keywords={`donasi, ${campaignTitle}, yayasan, sosial, bantuan, amal`}>
+  <!-- Hero Section -->
+  <section class="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-16">
+    <div class="container mx-auto px-4">
+      <div class="max-w-4xl mx-auto">
+        <nav class="text-primary-200 mb-6">
+          <a href="/" class="hover:text-white">Beranda</a>
+          <span class="mx-2">/</span>
+          <a href="/donasi" class="hover:text-white">Donasi</a>
+          <span class="mx-2">/</span>
+          <span class="text-white">{campaign.title}</span>
+        </nav>
+
+        <h1 class="text-3xl md:text-5xl font-bold mb-6">{campaign.title}</h1>
+
+        <!-- Share Buttons -->
+        <div class="flex items-center gap-4 mb-6">
+          <span class="text-primary-200 text-sm">Bagikan program ini:</span>
+          <ShareButtons
+            url={`${SITE}/donasi/${campaign.slug}`}
+            title={`${campaign.title} - Yayasan Taman Harapan Insan Mulia`}
+            description={campaign.description || `Mari bersama-sama membantu program ${campaign.title}`}
+            image={campaign.image ? `https://laravel.yathim.or.id/storage/${campaign.image}` : ""}
+            size="sm"
+            variant="horizontal"
+            className="opacity-90 hover:opacity-100"
+          />
+        </div>
+
+        <!-- <p class="text-lg md:text-xl text-primary-100 max-w-3xl">
+          {campaign.description}
+        </p> -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Program Details -->
+  <section class="py-16">
+    <div class="container mx-auto px-4">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+        <!-- Main Content -->
+        <div class="lg:col-span-2">
+          <!-- Program Image -->
+          <div class="aspect-video bg-gray-200 rounded-lg overflow-hidden mb-8">
+            {
+              campaign.image ? (
+                <img src={`${STORAGE_URL}/${campaign.image}`} alt={campaign.title} class="w-full h-full object-cover" />
+              ) : (
+                <div class="w-full h-full flex items-center justify-center text-gray-400">
+                  <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                </div>
+              )
+            }
+          </div>
+
+          <!-- Program Description -->
+          <div class="prose prose-lg max-w-none">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Tentang Program</h2>
+            <div class="text-gray-700 leading-relaxed">
+              {campaign.description && <div set:html={campaign.description} />}
+            </div>
+          </div>
+
+          <!-- Progress Section -->
+          {
+            campaign.goal && campaign.amount_raised && (
+              <div class="mt-8 p-6 bg-gray-50 rounded-lg">
+                <h3 class="text-xl font-semibold text-gray-900 mb-4">Progress Donasi</h3>
+                <div class="mb-4">
+                  <div class="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>Terkumpul: {formatCurrency(parseFloat(campaign.amount_raised))}</span>
+                    <span>Target: {formatCurrency(parseFloat(campaign.goal))}</span>
+                  </div>
+                  <div class="w-full bg-gray-200 rounded-full h-3">
+                    <div class="bg-primary-500 h-3 rounded-full transition-all duration-300" style={`width: ${calculateProgress(parseFloat(campaign.amount_raised), parseFloat(campaign.goal))}%`} />
+                  </div>
+                  <div class="text-sm text-gray-600 mt-2">{calculateProgress(parseFloat(campaign.amount_raised), parseFloat(campaign.goal)).toFixed(1)}% tercapai</div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <div class="text-2xl font-bold text-primary-600">{campaign.donor_count || 0}</div>
+                    <div class="text-sm text-gray-600">Donatur</div>
+                  </div>
+                  <div>
+                    <div class="text-2xl font-bold text-primary-600">{campaign.days_left || "Tidak terbatas"}</div>
+                    <div class="text-sm text-gray-600">Hari Tersisa</div>
+                  </div>
+                </div>
+              </div>
+            )
+          }
+        </div>
+
+        <!-- Hidden fields -->
+        <input type="hidden" id="campaign-slug" value={campaign.slug} />
+        <input type="hidden" id="payment-method" value="manual_transfer" />
+        <input type="hidden" id="transaction-id" value="" />
+        <input type="hidden" id="bank-account" value="" />
+
+        <!-- Donation Form Sidebar -->
+        <div class="lg:col-span-1">
+          <div class="sticky top-8">
+            <!-- Donation Form -->
+            <div class="bg-white rounded-lg shadow-lg p-6 border">
+              <h3 class="text-2xl font-bold text-gray-900 mb-6">Donasi Sekarang</h3>
+
+              <!-- Step Indicator -->
+              <div class="flex items-center mb-6">
+                <div class="flex items-center">
+                  <div id="step1-indicator" class="w-8 h-8 bg-primary-600 text-white rounded-full flex items-center justify-center text-sm font-semibold">1</div>
+                  <span id="step1-text" class="ml-2 text-sm font-medium text-primary-600">Data Donasi</span>
+                </div>
+                <div class="flex-1 h-px bg-gray-300 mx-4"></div>
+                <div class="flex items-center">
+                  <div id="step2-indicator" class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center text-sm font-semibold">2</div>
+                  <span id="step2-text" class="ml-2 text-sm font-medium text-gray-600">Konfirmasi</span>
+                </div>
+              </div>
+
+              <!-- Step 1: Donation Form -->
+              <form id="donation-form-step1" class="space-y-4">
+                <!-- Name Input -->
+                <div>
+                  <label for="donor-name" class="block text-sm font-medium text-gray-700 mb-2">Nama Donatur</label>
+                  <input
+                    type="text"
+                    id="donor-name"
+                    name="donor-name"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Masukkan nama Anda"
+                    required
+                  />
+                </div>
+
+                <!-- Anonymous Checkbox -->
+                <div class="flex items-center">
+                  <input type="checkbox" id="anonymous" name="anonymous" class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded" />
+                  <label for="anonymous" class="ml-2 text-sm text-gray-700">Donasi sebagai Anonim</label>
+                </div>
+
+                <!-- Donation Amount -->
+                <div>
+                  <label for="amount" class="block text-sm font-medium text-gray-700 mb-2">Jumlah Donasi</label>
+
+                  <!-- Preset Amounts -->
+                  <div class="grid grid-cols-2 gap-2 mb-3">
+                    <button type="button" class="amount-btn px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-primary-50 hover:border-primary-300" data-amount="50000">Rp 50.000</button>
+                    <button type="button" class="amount-btn px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-primary-50 hover:border-primary-300" data-amount="100000">Rp 100.000</button>
+                    <button type="button" class="amount-btn px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-primary-50 hover:border-primary-300" data-amount="250000">Rp 250.000</button>
+                    <button type="button" class="amount-btn px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-primary-50 hover:border-primary-300" data-amount="500000">Rp 500.000</button>
+                  </div>
+
+                  <!-- Custom Amount -->
+                  <input
+                    type="number"
+                    id="amount"
+                    name="amount"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Atau masukkan jumlah lain"
+                    min="10000"
+                    required
+                  />
+                </div>
+
+                <!-- Bank Selection -->
+                <div>
+                  <label for="bank" class="block text-sm font-medium text-gray-700 mb-2">Tujuan Transfer</label>
+                  <select id="bank" name="bank" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" required>
+                    <option value="">Pilih Bank</option>
+                    {
+                      banks &&
+                        Array.isArray(banks.data) &&
+                        banks.data.map((bank: any) => (
+                          <option value={bank.id}>
+                            {bank.name} - {bank.account_number}
+                          </option>
+                        ))
+                    }
+                  </select>
+                </div>
+
+                <!-- Message -->
+                <div>
+                  <label for="message" class="block text-sm font-medium text-gray-700 mb-2">Pesan (Opsional)</label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                    placeholder="Tulis pesan atau doa Anda..."></textarea>
+                </div>
+
+                <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"> Lanjutkan ke Konfirmasi </button>
+              </form>
+
+              <!-- Step 2: Confirmation -->
+              <div id="donation-form-step2" class="hidden">
+                <div class="space-y-4 mb-6">
+                  <h4 class="font-semibold text-lg text-gray-900">Ringkasan Donasi</h4>
+
+                  <div class="bg-gray-50 rounded-lg p-4 space-y-2">
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">Program:</span>
+                      <span class="font-medium">{campaign.title || campaign.name}</span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">Nama:</span>
+                      <span id="summary-name" class="font-medium"></span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">Jumlah:</span>
+                      <span id="summary-amount" class="font-medium text-primary-600"></span>
+                    </div>
+                    <div class="flex justify-between">
+                      <span class="text-gray-600">Bank:</span>
+                      <span id="summary-bank" class="font-medium"></span>
+                    </div>
+                  </div>
+                </div>
+
+                <form id="donation-form-final" class="space-y-4">
+                  <!-- Upload Proof -->
+                  <div>
+                    <label for="proof" class="block text-sm font-medium text-gray-700 mb-2">Upload Bukti Transfer</label>
+                    <input type="file" id="proof" name="proof" accept="image/*" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent" required />
+                    <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG, maksimal 2MB</p>
+                  </div>
+
+                  <div class="flex gap-3">
+                    <button type="button" id="back-to-step1" class="flex-1 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-3 px-4 rounded-lg transition-colors"> Kembali </button>
+                    <button type="submit" class="flex-1 bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"> Kirim Donasi </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Success Message -->
+              <div id="success-message" class="hidden text-center py-8">
+                <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                  </svg>
+                </div>
+                <h4 class="text-lg font-semibold text-gray-900 mb-2">Donasi Berhasil Dikirim!</h4>
+                <p class="text-gray-600 text-sm">Terima kasih atas donasi Anda. Tim kami akan segera memverifikasi pembayaran.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<!-- <script>
+  // Donation form functionality
+  const step1Form = document.getElementById("donation-form-step1");
+  const step2Form = document.getElementById("donation-form-step2");
+  const finalForm = document.getElementById("donation-form-final");
+  const successMessage = document.getElementById("success-message");
+
+  const step1Indicator = document.getElementById("step1-indicator");
+  const step2Indicator = document.getElementById("step2-indicator");
+  const step1Text = document.getElementById("step1-text");
+  const step2Text = document.getElementById("step2-text");
+
+  const backToStep1Btn = document.getElementById("back-to-step1");
+  const anonymousCheckbox = document.getElementById("anonymous");
+  const donorNameInput = document.getElementById("donor-name");
+
+  // Amount preset buttons
+  const amountBtns = document.querySelectorAll(".amount-btn");
+  const amountInput = document.getElementById("amount");
+
+  // Handle amount preset buttons
+  amountBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const amount = btn.getAttribute("data-amount");
+      amountInput.value = amount;
+
+      // Update button styles
+      amountBtns.forEach((b) => {
+        b.classList.remove("bg-primary-600", "text-white", "border-primary-600");
+        b.classList.add("border-gray-300");
+      });
+      btn.classList.add("bg-primary-600", "text-white", "border-primary-600");
+      btn.classList.remove("border-gray-300");
+    });
+  });
+
+  // Handle anonymous checkbox
+  anonymousCheckbox?.addEventListener("change", () => {
+    if (anonymousCheckbox.checked) {
+      donorNameInput.value = "Anonim";
+      donorNameInput.disabled = true;
+    } else {
+      donorNameInput.value = "";
+      donorNameInput.disabled = false;
+    }
+  });
+
+  // Step 1 form submission
+  step1Form?.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(step1Form);
+    const name = formData.get("donor-name");
+    const amount = formData.get("amount");
+    const bankSelect = document.getElementById("bank");
+    const bankText = bankSelect.options[bankSelect.selectedIndex].text;
+
+    // Update summary
+    document.getElementById("summary-name").textContent = name;
+    document.getElementById("summary-amount").textContent = new Intl.NumberFormat("id-ID", {
+      style: "currency",
+      currency: "IDR",
+      minimumFractionDigits: 0,
+    }).format(amount);
+    document.getElementById("summary-bank").textContent = bankText;
+
+    // Update step indicators
+    step1Indicator.classList.remove("bg-primary-600");
+    step1Indicator.classList.add("bg-green-600");
+    step1Text.classList.remove("text-primary-600");
+    step1Text.classList.add("text-green-600");
+
+    step2Indicator.classList.remove("bg-gray-300", "text-gray-600");
+    step2Indicator.classList.add("bg-primary-600", "text-white");
+    step2Text.classList.remove("text-gray-600");
+    step2Text.classList.add("text-primary-600");
+
+    // Show step 2
+    step1Form.classList.add("hidden");
+    step2Form.classList.remove("hidden");
+  });
+
+  // Back to step 1
+  backToStep1Btn?.addEventListener("click", () => {
+    // Reset step indicators
+    step1Indicator.classList.add("bg-primary-600");
+    step1Indicator.classList.remove("bg-green-600");
+    step1Text.classList.add("text-primary-600");
+    step1Text.classList.remove("text-green-600");
+
+    step2Indicator.classList.add("bg-gray-300", "text-gray-600");
+    step2Indicator.classList.remove("bg-primary-600", "text-white");
+    step2Text.classList.add("text-gray-600");
+    step2Text.classList.remove("text-primary-600");
+
+    // Show step 1
+    step2Form.classList.add("hidden");
+    step1Form.classList.remove("hidden");
+  });
+
+  // Final form submission
+  finalForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const step1Data = new FormData(step1Form);
+    const step2Data = new FormData(finalForm);
+
+    // Combine form data
+    const donationData = {
+      campaign_id: "{campaign.id}",
+      donor_name: step1Data.get("donor-name"),
+      amount: step1Data.get("amount"),
+      bank_id: step1Data.get("bank"),
+      message: step1Data.get("message"),
+      is_anonymous: step1Data.get("anonymous") ? true : false,
+      proof_image: step2Data.get("proof"),
+    };
+
+    try {
+      // Create FormData for file upload
+      const formData = new FormData();
+      Object.keys(donationData).forEach((key) => {
+        if (key === "proof_image") {
+          formData.append(key, donationData[key]);
+        } else {
+          formData.append(key, donationData[key]);
+        }
+      });
+
+      const response = await fetch("https://laravel.yathim.or.id/api/donasi", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        // Show success message
+        step2Form.classList.add("hidden");
+        successMessage.classList.remove("hidden");
+      } else {
+        alert("Terjadi kesalahan saat mengirim donasi. Silakan coba lagi.");
+      }
+    } catch (error) {
+      console.error("Error submitting donation:", error);
+      alert("Terjadi kesalahan saat mengirim donasi. Silakan coba lagi.");
+    }
+  });
+</script> -->
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const step1Form = document.getElementById("donation-form-step1") as HTMLFormElement | null;
+    const step2Form = document.getElementById("donation-form-step2") as HTMLElement | null;
+    const finalForm = document.getElementById("donation-form-final") as HTMLFormElement | null;
+    const successMessage = document.getElementById("success-message") as HTMLElement | null;
+
+    const step1Indicator = document.getElementById("step1-indicator") as HTMLElement | null;
+    const step2Indicator = document.getElementById("step2-indicator") as HTMLElement | null;
+    const step1Text = document.getElementById("step1-text") as HTMLElement | null;
+    const step2Text = document.getElementById("step2-text") as HTMLElement | null;
+
+    const anonymousCheckbox = document.getElementById("anonymous") as HTMLInputElement | null;
+    const donorNameInput = document.getElementById("donor-name") as HTMLInputElement | null;
+
+    const campaignSlug = document.getElementById("campaign-slug") as HTMLInputElement | null;
+    const amountBtns = document.querySelectorAll(".amount-btn");
+    const amountInput = document.getElementById("amount") as HTMLInputElement | null;
+    const bankSelect = document.getElementById("bank") as HTMLSelectElement | null;
+    const bankAccountInput = document.getElementById("bank-account") as HTMLInputElement | null;
+    const backToStep1Btn = document.getElementById("back-to-step1") as HTMLButtonElement | null;
+
+    // Preset amount handler
+    amountBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const amount = (btn as HTMLElement).dataset.amount;
+        if (amountInput && amount) {
+          amountInput.value = amount;
+        }
+        amountBtns.forEach((b) => b.classList.remove("bg-primary-600", "text-white"));
+        btn.classList.add("bg-primary-600", "text-white");
+      });
+    });
+
+    // Anonymous handler
+    anonymousCheckbox?.addEventListener("change", () => {
+      if (donorNameInput) {
+        donorNameInput.disabled = anonymousCheckbox.checked;
+        donorNameInput.value = anonymousCheckbox.checked ? "Anonim" : "";
+      }
+    });
+
+    // Set bank account value on select
+    bankSelect?.addEventListener("change", () => {
+      if (bankAccountInput && bankSelect.selectedIndex >= 0) {
+        const bankText = bankSelect.options[bankSelect.selectedIndex].text;
+        bankAccountInput.value = bankText;
+      }
+    });
+
+    // Submit Step 1
+    step1Form?.addEventListener("submit", (e) => {
+      e.preventDefault();
+      if (!step1Form || !step2Form) return;
+
+      const formData = new FormData(step1Form);
+      const summaryName = document.getElementById("summary-name");
+      const summaryAmount = document.getElementById("summary-amount");
+      const summaryBank = document.getElementById("summary-bank");
+
+      if (summaryName) summaryName.textContent = (formData.get("donor-name") as string) || "";
+      if (summaryAmount) {
+        const amount = formData.get("amount") as string;
+        summaryAmount.textContent = new Intl.NumberFormat("id-ID", {
+          style: "currency",
+          currency: "IDR",
+          minimumFractionDigits: 0,
+        }).format(parseFloat(amount) || 0);
+      }
+      if (summaryBank && bankSelect && bankSelect.selectedIndex >= 0) {
+        summaryBank.textContent = bankSelect.options[bankSelect.selectedIndex].text;
+      }
+
+      step1Form.classList.add("hidden");
+      step2Form.classList.remove("hidden");
+    });
+
+    backToStep1Btn?.addEventListener("click", () => {
+      if (step2Form && step1Form) {
+        step2Form.classList.add("hidden");
+        step1Form.classList.remove("hidden");
+      }
+    });
+
+    // Submit Final Form
+    finalForm?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!step1Form || !finalForm || !campaignSlug) return;
+
+      const form1 = new FormData(step1Form);
+      const form2 = new FormData(finalForm);
+
+      const payload = new FormData();
+      payload.append("slug", campaignSlug.value);
+      payload.append("amount", (form1.get("amount") as string) || "");
+
+      const paymentMethodEl = document.getElementById("payment-method") as HTMLInputElement;
+      const bankAccountEl = document.getElementById("bank-account") as HTMLInputElement;
+      const transactionIdEl = document.getElementById("transaction-id") as HTMLInputElement;
+
+      if (paymentMethodEl) payload.append("payment_method", paymentMethodEl.value);
+      if (bankAccountEl) payload.append("bank_account", bankAccountEl.value);
+      if (transactionIdEl) payload.append("transaction_id", transactionIdEl.value || "");
+
+      const proofFile = form2.get("proof");
+      if (proofFile) payload.append("payment_proof", proofFile);
+
+      payload.append("notes", (form1.get("message") as string) || "");
+      // payload.append("donor_name", (form1.get("donor-name") as string) || "");
+      // payload.append("is_anonymous", form1.get("anonymous") ? "1" : "0");
+
+      try {
+        const res = await fetch("https://laravel.yathim.or.id/api/donation", {
+          method: "POST",
+          body: payload,
+          credentials: "include",
+        });
+
+        if (res.ok) {
+          if (step2Form) step2Form.classList.add("hidden");
+          if (successMessage) successMessage.classList.remove("hidden");
+        } else {
+          const err = await res.text();
+          alert("Gagal mengirim donasi:\n" + err);
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Terjadi kesalahan. Coba lagi.");
+      }
+    });
+  });
+</script>

@@ -1,0 +1,42 @@
+---
+interface Props {
+  id: string;
+  title: string;
+  description: string;
+  image: string;
+  target: number;
+  collected: number;
+  daysLeft: number;
+}
+
+const { id, title, description, image, target, collected, daysLeft } = Astro.props;
+
+// Calculate percentage
+const percentage = Math.min(Math.round((collected / target) * 100), 100);
+---
+
+<div class="bg-white rounded-lg overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+  <img src={image} alt={title} class="w-full h-48 object-cover" />
+  
+  <div class="p-5">
+    <h3 class="font-bold text-xl mb-2 text-gray-800">{title}</h3>
+    <p class="text-gray-600 mb-4 line-clamp-2">{description}</p>
+    
+    <!-- Progress bar -->
+    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+      <div class="bg-primary h-2.5 rounded-full" style={`width: ${percentage}%`}></div>
+    </div>
+    
+    <div class="flex justify-between text-sm mb-4">
+      <span class="font-medium">Terkumpul: Rp {collected.toLocaleString('id-ID')}</span>
+      <span class="text-gray-500">dari Rp {target.toLocaleString('id-ID')}</span>
+    </div>
+    
+    <div class="flex justify-between items-center">
+      <span class="text-sm text-gray-500">{daysLeft} hari lagi</span>
+      <a href={`/donasi/${id}`} class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-dark transition-colors">
+        Donasi
+      </a>
+    </div>
+  </div>
+</div>

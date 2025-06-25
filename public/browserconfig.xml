@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<browserconfig>
+    <msapplication>
+        <tile>
+            <square70x70logo src="/images/LOGO-YATHIM.png"/>
+            <square150x150logo src="/images/LOGO-YATHIM.png"/>
+            <square310x310logo src="/images/LOGO-YATHIM.png"/>
+            <wide310x150logo src="/images/LOGO-YATHIM.png"/>
+            <TileColor>#0ea5e9</TileColor>
+        </tile>
+    </msapplication>
+</browserconfig>

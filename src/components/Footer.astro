@@ -1,0 +1,98 @@
+---
+// Footer.astro
+const currentYear = new Date().getFullYear();
+---
+
+<footer class="bg-gray-900 text-white">
+  <div class="container mx-auto px-4 py-12">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      <!-- Yayasan Info -->
+      <div class="lg:col-span-2">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-12 h-12 bg-primary-500 rounded-lg flex items-center justify-center p-1">
+            <img src="/images/LOGO-YATHIM.png" alt="logo-yayasan-taman-harapan-insan-mulia" class="w-24 h-24 object-contain" />
+          </div>
+          <div class="flex flex-col">
+            <span class="font-bold text-xl leading-tight">Yayasan</span>
+            <span class="text-gray-300 leading-tight">Taman Harapan Insan Mulia</span>
+          </div>
+        </div>
+        <p class="text-gray-300 mb-4 max-w-md">Yayasan yang bergerak dalam bidang pendidikan, kesehatan, dan pemberdayaan masyarakat untuk membantu yatim dan dhuafa mencapai kehidupan yang lebih baik.</p>
+        <div class="flex space-x-4">
+          <a href="https://www.facebook.com/yathim.official" class="text-gray-400 hover:text-primary-400 transition-colors" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M22.675 0H1.325C.593 0 0 .593 0 1.326v21.348C0 23.406.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.464.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.31h3.587l-.467 3.622h-3.12V24h6.116C23.407 24 24 23.406 24 22.674V1.326C24 .593 23.407 0 22.675 0z"
+              ></path>
+            </svg>
+          </a>
+
+          <a href="https://www.instagram.com/yathim.official/" class="text-gray-400 hover:text-primary-400 transition-colors">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path
+                d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"
+              ></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div>
+        <h3 class="font-semibold text-lg mb-4">Menu Utama</h3>
+        <ul class="space-y-2">
+          <li><a href="/" class="text-gray-300 hover:text-primary-400 transition-colors">Beranda</a></li>
+          <li><a href="/donasi" class="text-gray-300 hover:text-primary-400 transition-colors">Program Donasi</a></li>
+          <li><a href="/artikel" class="text-gray-300 hover:text-primary-400 transition-colors">Artikel</a></li>
+          <li><a href="/galeri" class="text-gray-300 hover:text-primary-400 transition-colors">Galeri</a></li>
+          <li><a href="/tentang" class="text-gray-300 hover:text-primary-400 transition-colors">Tentang Kami</a></li>
+        </ul>
+      </div>
+
+      <!-- Contact Info -->
+      <div>
+        <h3 class="font-semibold text-lg mb-4">Kontak</h3>
+        <ul class="space-y-3 text-gray-300">
+          <li class="flex items-start gap-2">
+            <svg class="w-5 h-5 mt-0.5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+            </svg>
+            <span class="text-sm"
+              >Jl. H Jamat Gg. Rais RT.003/005 <br />
+              Kel. Buaran, Kec. Serpong, South Tangerang</span
+            >
+          </li>
+          <!-- <li class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
+              ></path>
+            </svg>
+            <span class="text-sm">+62 21 1234 5678</span>
+          </li> -->
+          <li class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+            <span class="text-sm">info@yathim.or.id</span>
+          </li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Bottom Bar -->
+    <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+      <p class="text-gray-400 text-sm">
+        © {currentYear} Yayasan Taman Harapan Insan Mulia. Semua hak dilindungi.
+      </p>
+      <div class="flex space-x-6 mt-4 md:mt-0">
+        <a href="/privacy" class="text-gray-400 hover:text-primary-400 text-sm transition-colors">Kebijakan Privasi</a>
+        <a href="/terms" class="text-gray-400 hover:text-primary-400 text-sm transition-colors">Syarat & Ketentuan</a>
+      </div>
+    </div>
+  </div>
+</footer>
