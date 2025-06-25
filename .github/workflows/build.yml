@@ -30,3 +30,4 @@ jobs:
           password: ${{ secrets.FTP_PASS }}
           local-dir: ./dist/      
           server-dir: /yathim.or.id/  
+          timeout: 190000
