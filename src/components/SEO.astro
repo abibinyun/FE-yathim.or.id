@@ -55,6 +55,78 @@ const fullImageUrl = image.startsWith('http') ? image : `${siteUrl}${image}`;
 
 // Robots meta
 const robotsContent = `${noindex ? 'noindex' : 'index'}, ${nofollow ? 'nofollow' : 'follow'}`;
+
+// JSON-LD data preparation
+const organizationData = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": siteName,
+  "alternateName": "YATHIM",
+  "url": siteUrl,
+  "logo": `${siteUrl}/images/image-yathim.jpeg`,
+  "description": "Yayasan sosial yang bergerak dalam bidang pendidikan, kesehatan, dan pemberdayaan masyarakat untuk yatim dan dhuafa",
+  "address": {
+    "@type": "PostalAddress",
+    "streetAddress": "Jl. H Jamat Gg. Rais RT.003/005",
+    "addressLocality": "Tangerang Selatan",
+    "addressRegion": "Banten",
+    "postalCode": "12345",
+    "addressCountry": "ID"
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "contactType": "customer service",
+    "email": "info@yathim.or.id"
+  },
+  "sameAs": [
+    "https://www.facebook.com/yathim.official",
+    "https://www.instagram.com/yathim.official"
+  ]
+};
+
+const websiteData = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": siteName,
+  "url": siteUrl,
+  "description": "Website resmi Yayasan Taman Harapan Insan Mulia untuk donasi dan program sosial",
+  "publisher": {
+    "@type": "Organization",
+    "name": siteName
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": `${siteUrl}/search?q={search_term_string}`,
+    "query-input": "required name=search_term_string"
+  }
+};
+
+// Article data - only if it's an article with required fields
+const articleData = type === 'article' && publishedTime ? {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": optimizedTitle,
+  "description": optimizedDescription,
+  "image": fullImageUrl,
+  "author": {
+    "@type": "Organization",
+    "name": author
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": siteName,
+    "logo": {
+      "@type": "ImageObject",
+      "url": `${siteUrl}/images/image-yathim.jpeg`
+    }
+  },
+  "datePublished": publishedTime,
+  "dateModified": modifiedTime || publishedTime,
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": normalizedCanonical
+  }
+} : null;
 ---
 
 <!-- Primary Meta Tags -->
@@ -131,82 +203,12 @@ const robotsContent = `${noindex ? 'noindex' : 'index'}, ${nofollow ? 'nofollow'
 <link rel="alternate" type="application/rss+xml" title={`${siteName} RSS Feed`} href={`${siteUrl}/rss.xml`} />
 
 <!-- Structured Data for Organization -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  "name": siteName,
-  "alternateName": "YATHIM",
-  "url": siteUrl,
-  "logo": `${siteUrl}/images/image-yathim.jpeg`,
-  "description": "Yayasan sosial yang bergerak dalam bidang pendidikan, kesehatan, dan pemberdayaan masyarakat untuk yatim dan dhuafa",
-  "address": {
-    "@type": "PostalAddress",
-    "streetAddress": "Jl. H Jamat Gg. Rais RT.003/005",
-    "addressLocality": "Tangerang Selatan",
-    "addressRegion": "Banten",
-    "postalCode": "12345",
-    "addressCountry": "ID"
-  },
-  "contactPoint": {
-    "@type": "ContactPoint",
-    // "telephone": "+62-21-1234-5678",
-    "contactType": "customer service",
-    "email": "info@yathim.or.id"
-  },
-  "sameAs": [
-    "https://www.facebook.com/yathim.official",
-    "https://www.instagram.com/yathim.official"
-  ]
-}
-</script>
+<script type="application/ld+json" set:html={JSON.stringify(organizationData)}></script>
 
 <!-- Structured Data for Website -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  "name": siteName,
-  "url": siteUrl,
-  "description": "Website resmi Yayasan Taman Harapan Insan Mulia untuk donasi dan program sosial",
-  "publisher": {
-    "@type": "Organization",
-    "name": siteName
-  },
-  "potentialAction": {
-    "@type": "SearchAction",
-    "target": `${siteUrl}/search?q={search_term_string}`,
-    "query-input": "required name=search_term_string"
-  }
-}
-</script>
+<script type="application/ld+json" set:html={JSON.stringify(websiteData)}></script>
 
-{type === 'article' && (
-  <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Article",
-    "headline": optimizedTitle,
-    "description": optimizedDescription,
-    "image": fullImageUrl,
-    "author": {
-      "@type": "Organization",
-      "name": author
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": siteName,
-      "logo": {
-        "@type": "ImageObject",
-        "url": `${siteUrl}/images/image-yathim.jpeg`
-      }
-    },
-    "datePublished": publishedTime,
-    "dateModified": modifiedTime || publishedTime,
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": normalizedCanonical
-    }
-  }
-  </script>
+<!-- Structured Data for Article (only if article with publishedTime) -->
+{articleData && (
+  <script type="application/ld+json" set:html={JSON.stringify(articleData)}></script>
 )}

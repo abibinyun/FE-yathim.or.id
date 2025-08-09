@@ -105,9 +105,12 @@ const seoTitle = truncateText(`${campaignTitle} - Yayasan Taman Harapan Insan Mu
 const seoDescription = truncateText(campaignDescription || `Mari bersama-sama membantu program ${campaignTitle} di Yayasan Taman Harapan Insan Mulia`, 160);
 const publishedTime = formatDate(campaign.created_at);
 const modifiedTime = formatDate(campaign.updated_at);
+
+//FB Pixel
+const FbPixel = campaign?.facebook_pixel
 ---
 
-<BaseLayout title={seoTitle} description={seoDescription} image={fullImageUrl} type="article" publishedTime={publishedTime} modifiedTime={modifiedTime} keywords={`donasi, ${campaignTitle}, yayasan, sosial, bantuan, amal`}>
+<BaseLayout title={seoTitle} description={seoDescription} image={fullImageUrl} type="article" publishedTime={publishedTime} modifiedTime={modifiedTime} keywords={`donasi, ${campaignTitle}, yayasan, sosial, bantuan, amal`} facebook_pixel={FbPixel}>
   <!-- Hero Section -->
   <section class="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-16">
     <div class="container mx-auto px-4">
@@ -367,283 +370,242 @@ const modifiedTime = formatDate(campaign.updated_at);
   </section>
 </BaseLayout>
 
-<!-- <script>
-  // Donation form functionality
-  const step1Form = document.getElementById("donation-form-step1");
-  const step2Form = document.getElementById("donation-form-step2");
-  const finalForm = document.getElementById("donation-form-final");
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  // DOM Elements
+  const step1Form = document.getElementById("donation-form-step1") as HTMLFormElement | null;
+  const step2Form = document.getElementById("donation-form-step2") as HTMLFormElement | null;
+  const finalForm = document.getElementById("donation-form-final") as HTMLFormElement | null;
   const successMessage = document.getElementById("success-message");
 
-  const step1Indicator = document.getElementById("step1-indicator");
-  const step2Indicator = document.getElementById("step2-indicator");
-  const step1Text = document.getElementById("step1-text");
-  const step2Text = document.getElementById("step2-text");
+  const anonymousCheckbox = document.getElementById("anonymous") as HTMLInputElement | null;
+  const donorNameInput = document.getElementById("donor-name") as HTMLInputElement | null;
 
+  const campaignSlug = document.getElementById("campaign-slug") as HTMLInputElement | null;
+  const amountBtns = document.querySelectorAll<HTMLButtonElement>(".amount-btn");
+  const amountInput = document.getElementById("amount") as HTMLInputElement | null;
+  const bankSelect = document.getElementById("bank") as HTMLSelectElement | null;
+  const bankAccountInput = document.getElementById("bank-account") as HTMLInputElement | null;
   const backToStep1Btn = document.getElementById("back-to-step1");
-  const anonymousCheckbox = document.getElementById("anonymous");
-  const donorNameInput = document.getElementById("donor-name");
 
-  // Amount preset buttons
-  const amountBtns = document.querySelectorAll(".amount-btn");
-  const amountInput = document.getElementById("amount");
+  // FB Pixel Helper & Queue
+  window._pendingFbEvents = window._pendingFbEvents || [];
 
-  // Handle amount preset buttons
+  function fbTrack(eventName: string, eventData: Record<string, any> = {}) {
+    try {
+      if (typeof window.fbq === "function") {
+        window.fbq("track", eventName, eventData);
+      } else {
+        window._pendingFbEvents?.push({ eventName, eventData });
+      }
+    } catch (err) {
+      console.error("❌ FB Track Error:", err);
+    }
+  }
+
+  function flushPendingFbEvents() {
+    if (typeof window.fbq === "function" && Array.isArray(window._pendingFbEvents) && window._pendingFbEvents.length) {
+      window._pendingFbEvents.forEach(ev => {
+        try {
+          window.fbq?.("track", ev.eventName, ev.eventData);
+        } catch (e) {
+          console.warn("❌ Flush error:", e);
+        }
+      });
+      window._pendingFbEvents.length = 0;
+    }
+  }
+
+  // Initial flush
+  setTimeout(flushPendingFbEvents, 500); // Give time for fbq to load
+
+  // Tracking state
+  let step1Tracked = false;
+  let donationTracked = false;
+
+  // Preset amount handler
   amountBtns.forEach((btn) => {
     btn.addEventListener("click", () => {
-      const amount = btn.getAttribute("data-amount");
-      amountInput.value = amount;
+      const amount = btn.dataset.amount;
+      if (amountInput && amount) {
+        amountInput.value = amount;
+      }
+      
+      // Update button states
+      amountBtns.forEach((b) => b.classList.remove("bg-primary-600", "text-white"));
+      btn.classList.add("bg-primary-600", "text-white");
 
-      // Update button styles
-      amountBtns.forEach((b) => {
-        b.classList.remove("bg-primary-600", "text-white", "border-primary-600");
-        b.classList.add("border-gray-300");
-      });
-      btn.classList.add("bg-primary-600", "text-white", "border-primary-600");
-      btn.classList.remove("border-gray-300");
+      // Track amount selection
+      if (amount) {
+        fbTrack("SelectDonationAmount", {
+          value: Number(amount),
+          currency: "IDR",
+          content_ids: [campaignSlug?.value || ""]
+        });
+        flushPendingFbEvents();
+      }
     });
   });
 
-  // Handle anonymous checkbox
+  // Anonymous checkbox handler
   anonymousCheckbox?.addEventListener("change", () => {
-    if (anonymousCheckbox.checked) {
-      donorNameInput.value = "Anonim";
-      donorNameInput.disabled = true;
-    } else {
-      donorNameInput.value = "";
-      donorNameInput.disabled = false;
+    if (donorNameInput) {
+      donorNameInput.disabled = anonymousCheckbox.checked;
+      donorNameInput.value = anonymousCheckbox.checked ? "Anonim" : "";
+      donorNameInput.placeholder = anonymousCheckbox.checked ? "Anonim" : "Masukkan nama Anda";
     }
   });
 
-  // Step 1 form submission
+  // Bank selection handler
+  bankSelect?.addEventListener("change", () => {
+    if (bankAccountInput && bankSelect.selectedIndex >= 0) {
+      const selectedOption = bankSelect.options[bankSelect.selectedIndex];
+      bankAccountInput.value = selectedOption.text;
+    }
+  });
+
+  // Step 1 Form Submit
   step1Form?.addEventListener("submit", (e) => {
     e.preventDefault();
+    if (!step1Form || !step2Form) return;
 
     const formData = new FormData(step1Form);
-    const name = formData.get("donor-name");
-    const amount = formData.get("amount");
-    const bankSelect = document.getElementById("bank");
-    const bankText = bankSelect.options[bankSelect.selectedIndex].text;
+    
+    // Update summary display
+    updateSummaryDisplay(formData);
 
-    // Update summary
-    document.getElementById("summary-name").textContent = name;
-    document.getElementById("summary-amount").textContent = new Intl.NumberFormat("id-ID", {
-      style: "currency",
-      currency: "IDR",
-      minimumFractionDigits: 0,
-    }).format(amount);
-    document.getElementById("summary-bank").textContent = bankText;
+    // Track Lead event (only once)
+    if (!step1Tracked) {
+      const amountNum = parseFloat((formData.get("amount") as string) || "0");
+      fbTrack("Lead", {
+        content_name: document.querySelector("h1")?.textContent || "",
+        content_ids: [campaignSlug?.value || ""],
+        value: amountNum,
+        currency: "IDR"
+      });
+      flushPendingFbEvents();
+      step1Tracked = true;
+    }
 
-    // Update step indicators
-    step1Indicator.classList.remove("bg-primary-600");
-    step1Indicator.classList.add("bg-green-600");
-    step1Text.classList.remove("text-primary-600");
-    step1Text.classList.add("text-green-600");
-
-    step2Indicator.classList.remove("bg-gray-300", "text-gray-600");
-    step2Indicator.classList.add("bg-primary-600", "text-white");
-    step2Text.classList.remove("text-gray-600");
-    step2Text.classList.add("text-primary-600");
-
-    // Show step 2
+    // Navigate to step 2
     step1Form.classList.add("hidden");
     step2Form.classList.remove("hidden");
   });
 
   // Back to step 1
   backToStep1Btn?.addEventListener("click", () => {
-    // Reset step indicators
-    step1Indicator.classList.add("bg-primary-600");
-    step1Indicator.classList.remove("bg-green-600");
-    step1Text.classList.add("text-primary-600");
-    step1Text.classList.remove("text-green-600");
-
-    step2Indicator.classList.add("bg-gray-300", "text-gray-600");
-    step2Indicator.classList.remove("bg-primary-600", "text-white");
-    step2Text.classList.add("text-gray-600");
-    step2Text.classList.remove("text-primary-600");
-
-    // Show step 1
-    step2Form.classList.add("hidden");
-    step1Form.classList.remove("hidden");
-  });
-
-  // Final form submission
-  finalForm?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const step1Data = new FormData(step1Form);
-    const step2Data = new FormData(finalForm);
-
-    // Combine form data
-    const donationData = {
-      campaign_id: "{campaign.id}",
-      donor_name: step1Data.get("donor-name"),
-      amount: step1Data.get("amount"),
-      bank_id: step1Data.get("bank"),
-      message: step1Data.get("message"),
-      is_anonymous: step1Data.get("anonymous") ? true : false,
-      proof_image: step2Data.get("proof"),
-    };
-
-    try {
-      // Create FormData for file upload
-      const formData = new FormData();
-      Object.keys(donationData).forEach((key) => {
-        if (key === "proof_image") {
-          formData.append(key, donationData[key]);
-        } else {
-          formData.append(key, donationData[key]);
-        }
-      });
-
-      const response = await fetch("https://laravel.yathim.or.id/api/donasi", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.ok) {
-        // Show success message
-        step2Form.classList.add("hidden");
-        successMessage.classList.remove("hidden");
-      } else {
-        alert("Terjadi kesalahan saat mengirim donasi. Silakan coba lagi.");
-      }
-    } catch (error) {
-      console.error("Error submitting donation:", error);
-      alert("Terjadi kesalahan saat mengirim donasi. Silakan coba lagi.");
+    if (step2Form && step1Form) {
+      step2Form.classList.add("hidden");
+      step1Form.classList.remove("hidden");
     }
   });
-</script> -->
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const step1Form = document.getElementById("donation-form-step1") as HTMLFormElement | null;
-    const step2Form = document.getElementById("donation-form-step2") as HTMLElement | null;
-    const finalForm = document.getElementById("donation-form-final") as HTMLFormElement | null;
-    const successMessage = document.getElementById("success-message") as HTMLElement | null;
+  // Final Form Submit
+  finalForm?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!step1Form || !finalForm || !campaignSlug) return;
 
-    const step1Indicator = document.getElementById("step1-indicator") as HTMLElement | null;
-    const step2Indicator = document.getElementById("step2-indicator") as HTMLElement | null;
-    const step1Text = document.getElementById("step1-text") as HTMLElement | null;
-    const step2Text = document.getElementById("step2-text") as HTMLElement | null;
+    const submitBtn = finalForm.querySelector('button[type="submit"]') as HTMLButtonElement;
+    if (submitBtn) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Mengirim...";
+    }
 
-    const anonymousCheckbox = document.getElementById("anonymous") as HTMLInputElement | null;
-    const donorNameInput = document.getElementById("donor-name") as HTMLInputElement | null;
-
-    const campaignSlug = document.getElementById("campaign-slug") as HTMLInputElement | null;
-    const amountBtns = document.querySelectorAll(".amount-btn");
-    const amountInput = document.getElementById("amount") as HTMLInputElement | null;
-    const bankSelect = document.getElementById("bank") as HTMLSelectElement | null;
-    const bankAccountInput = document.getElementById("bank-account") as HTMLInputElement | null;
-    const backToStep1Btn = document.getElementById("back-to-step1") as HTMLButtonElement | null;
-
-    // Preset amount handler
-    amountBtns.forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const amount = (btn as HTMLElement).dataset.amount;
-        if (amountInput && amount) {
-          amountInput.value = amount;
-        }
-        amountBtns.forEach((b) => b.classList.remove("bg-primary-600", "text-white"));
-        btn.classList.add("bg-primary-600", "text-white");
-      });
-    });
-
-    // Anonymous handler
-    anonymousCheckbox?.addEventListener("change", () => {
-      if (donorNameInput) {
-        donorNameInput.disabled = anonymousCheckbox.checked;
-        donorNameInput.value = anonymousCheckbox.checked ? "Anonim" : "";
-      }
-    });
-
-    // Set bank account value on select
-    bankSelect?.addEventListener("change", () => {
-      if (bankAccountInput && bankSelect.selectedIndex >= 0) {
-        const bankText = bankSelect.options[bankSelect.selectedIndex].text;
-        bankAccountInput.value = bankText;
-      }
-    });
-
-    // Submit Step 1
-    step1Form?.addEventListener("submit", (e) => {
-      e.preventDefault();
-      if (!step1Form || !step2Form) return;
-
-      const formData = new FormData(step1Form);
-      const summaryName = document.getElementById("summary-name");
-      const summaryAmount = document.getElementById("summary-amount");
-      const summaryBank = document.getElementById("summary-bank");
-
-      if (summaryName) summaryName.textContent = (formData.get("donor-name") as string) || "";
-      if (summaryAmount) {
-        const amount = formData.get("amount") as string;
-        summaryAmount.textContent = new Intl.NumberFormat("id-ID", {
-          style: "currency",
-          currency: "IDR",
-          minimumFractionDigits: 0,
-        }).format(parseFloat(amount) || 0);
-      }
-      if (summaryBank && bankSelect && bankSelect.selectedIndex >= 0) {
-        summaryBank.textContent = bankSelect.options[bankSelect.selectedIndex].text;
-      }
-
-      step1Form.classList.add("hidden");
-      step2Form.classList.remove("hidden");
-    });
-
-    backToStep1Btn?.addEventListener("click", () => {
-      if (step2Form && step1Form) {
-        step2Form.classList.add("hidden");
-        step1Form.classList.remove("hidden");
-      }
-    });
-
-    // Submit Final Form
-    finalForm?.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      if (!step1Form || !finalForm || !campaignSlug) return;
-
+    try {
       const form1 = new FormData(step1Form);
       const form2 = new FormData(finalForm);
 
-      const payload = new FormData();
-      payload.append("slug", campaignSlug.value);
-      payload.append("amount", (form1.get("amount") as string) || "");
-
-      const paymentMethodEl = document.getElementById("payment-method") as HTMLInputElement;
-      const bankAccountEl = document.getElementById("bank-account") as HTMLInputElement;
-      const transactionIdEl = document.getElementById("transaction-id") as HTMLInputElement;
-
-      if (paymentMethodEl) payload.append("payment_method", paymentMethodEl.value);
-      if (bankAccountEl) payload.append("bank_account", bankAccountEl.value);
-      if (transactionIdEl) payload.append("transaction_id", transactionIdEl.value || "");
-
-      const proofFile = form2.get("proof");
-      if (proofFile) payload.append("payment_proof", proofFile);
-
-      payload.append("notes", (form1.get("message") as string) || "");
-      // payload.append("donor_name", (form1.get("donor-name") as string) || "");
-      // payload.append("is_anonymous", form1.get("anonymous") ? "1" : "0");
-
-      try {
-        const res = await fetch("https://laravel.yathim.or.id/api/donation", {
-          method: "POST",
-          body: payload,
-          credentials: "include",
-        });
-
-        if (res.ok) {
-          if (step2Form) step2Form.classList.add("hidden");
-          if (successMessage) successMessage.classList.remove("hidden");
-        } else {
-          const err = await res.text();
-          alert("Gagal mengirim donasi:\n" + err);
+      const payload = createPayload(form1, form2, campaignSlug.value);
+      
+      const response = await submitDonation(payload);
+      
+      if (response.ok) {
+        // Track successful donation (only once)
+        if (!donationTracked) {
+          const donatedAmount = parseFloat((form1.get("amount") as string) || "0");
+          fbTrack("Donate", {
+            value: donatedAmount,
+            currency: "IDR",
+            content_name: document.querySelector("h1")?.textContent || "",
+            content_ids: [campaignSlug.value]
+          });
+          flushPendingFbEvents();
+          donationTracked = true;
         }
-      } catch (err) {
-        console.error(err);
-        alert("Terjadi kesalahan. Coba lagi.");
+
+        // Show success
+        step2Form?.classList.add("hidden");
+        successMessage?.classList.remove("hidden");
+      } else {
+        const errorText = await response.text();
+        throw new Error(errorText);
       }
-    });
+    } catch (err) {
+      console.error("Donation error:", err);
+      alert("Terjadi kesalahan saat mengirim donasi. Silakan coba lagi.");
+    } finally {
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Kirim Donasi";
+      }
+    }
   });
+
+  // Helper Functions
+  function updateSummaryDisplay(formData: FormData) {
+    const summaryName = document.getElementById("summary-name");
+    const summaryAmount = document.getElementById("summary-amount");
+    const summaryBank = document.getElementById("summary-bank");
+
+    if (summaryName) {
+      summaryName.textContent = (formData.get("donor-name") as string) || "Anonim";
+    }
+    
+    if (summaryAmount) {
+      const amount = parseFloat((formData.get("amount") as string) || "0");
+      summaryAmount.textContent = new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0,
+      }).format(amount);
+    }
+    
+    if (summaryBank && bankSelect && bankSelect.selectedIndex >= 0) {
+      summaryBank.textContent = bankSelect.options[bankSelect.selectedIndex].text;
+    }
+  }
+
+  function createPayload(form1: FormData, form2: FormData, slug: string): FormData {
+    const payload = new FormData();
+    
+    payload.append("slug", slug);
+    payload.append("amount", (form1.get("amount") as string) || "");
+    payload.append("notes", (form1.get("message") as string) || "");
+
+    // Payment details
+    const paymentMethodEl = document.getElementById("payment-method") as HTMLInputElement | null;
+    const bankAccountEl = document.getElementById("bank-account") as HTMLInputElement | null;
+    const transactionIdEl = document.getElementById("transaction-id") as HTMLInputElement | null;
+
+    if (paymentMethodEl) payload.append("payment_method", paymentMethodEl.value);
+    if (bankAccountEl) payload.append("bank_account", bankAccountEl.value);
+    if (transactionIdEl) payload.append("transaction_id", transactionIdEl.value || "");
+
+    // Payment proof file
+    const proofFile = form2.get("proof");
+    if (proofFile instanceof File && proofFile.size > 0) {
+      payload.append("payment_proof", proofFile);
+    }
+
+    return payload;
+  }
+
+  async function submitDonation(payload: FormData): Promise<Response> {
+    return fetch("https://laravel.yathim.or.id/api/donation", {
+      method: "POST",
+      body: payload,
+      credentials: "include",
+    });
+  }
+});
 </script>

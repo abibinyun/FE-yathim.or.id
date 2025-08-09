@@ -352,16 +352,13 @@ const calculateProgress = (raised: any, goal: any) => {
           apiUrl += `&sort=newest`;
         }
 
-        console.log("Fetching from URL:", apiUrl);
         const response = await fetch(apiUrl);
         const data = await response.json();
-
-        console.log("API Response:", data);
 
         if (data.success && data.data) {
           renderCampaigns(data.data.data || []);
           paginationData = data.data;
-          console.log("Pagination data set:", paginationData);
+          
           renderPagination();
           updateResultsInfo();
         } else {
@@ -614,8 +611,6 @@ const calculateProgress = (raised: any, goal: any) => {
     function renderPagination() {
       if (!paginationContainer) return;
 
-      console.log("Rendering pagination with data:", paginationData);
-
       if (!paginationData || !paginationData.last_page) {
         console.log("No pagination data available");
         paginationContainer.innerHTML = "";
@@ -742,7 +737,6 @@ const calculateProgress = (raised: any, goal: any) => {
 
     // Initialize on page load
     document.addEventListener("DOMContentLoaded", () => {
-      console.log("DOM loaded, initializing pagination...");
       readUrlParams();
 
       // Initialize share buttons for initial server-side rendered content

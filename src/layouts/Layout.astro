@@ -1,4 +1,5 @@
 ---
+import FacebookPixel from "../components/FacebookPixel.astro";
 import SEO from "../components/SEO.astro";
 
 export interface Props {
@@ -13,6 +14,7 @@ export interface Props {
   modifiedTime?: string;
   noindex?: boolean;
   nofollow?: boolean;
+  facebook_pixel?: string;
 }
 
 const props = Astro.props;
@@ -45,6 +47,10 @@ const props = Astro.props;
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+    <!-- FB Pixel - start -->
+    {props.facebook_pixel && <FacebookPixel pixelId={props.facebook_pixel} />}
+    <!-- FB Pixel - end -->
   </head>
   <body class="font-sans bg-white text-gray-900 antialiased">
     <slot />

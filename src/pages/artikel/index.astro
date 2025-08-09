@@ -335,16 +335,13 @@ const truncateText = (text: string, maxLength: number = 150) => {
           apiUrl += `&sort=newest`;
         }
 
-        console.log("Fetching from URL:", apiUrl);
         const response = await fetch(apiUrl);
         const data = await response.json();
-
-        console.log("API Response:", data);
 
         if (data.success && data.data) {
           renderArticles(data.data.data || []);
           paginationData = data.data;
-          console.log("Pagination data set:", paginationData);
+
           renderPagination();
           updateResultsInfo();
         } else {
@@ -585,9 +582,6 @@ const truncateText = (text: string, maxLength: number = 150) => {
     // Render pagination
     function renderPagination() {
       if (!paginationContainer) return;
-
-      console.log("Rendering pagination with data:", paginationData);
-
       if (!paginationData || !paginationData.last_page) {
         console.log("No pagination data available");
         paginationContainer.innerHTML = "";
@@ -716,7 +710,6 @@ const truncateText = (text: string, maxLength: number = 150) => {
 
     // Initialize on page load
     document.addEventListener("DOMContentLoaded", () => {
-      console.log("DOM loaded, initializing pagination...");
       readUrlParams();
 
       // Initialize share buttons for initial server-side rendered content

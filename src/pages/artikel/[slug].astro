@@ -79,9 +79,12 @@ const seoTitle = truncateText(`${articleTitle} - Yayasan Taman Harapan Insan Mul
 const seoDescription = truncateText(articleDescription || `Baca artikel ${articleTitle} di website resmi Yayasan Taman Harapan Insan Mulia`, 160);
 const publishedTime = formatDate(article.published_at || article.created_at);
 const modifiedTime = formatDate(article.updated_at);
+
+//FB Pixel
+const FbPixel = article?.facebook_pixel
 ---
 
-<BaseLayout title={seoTitle} description={seoDescription} image={fullImageUrl} type="article" publishedTime={publishedTime} modifiedTime={modifiedTime} keywords={`artikel, ${articleTitle}, yayasan, sosial, pendidikan, kesehatan`}>
+<BaseLayout title={seoTitle} description={seoDescription} image={fullImageUrl} type="article" publishedTime={publishedTime} modifiedTime={modifiedTime} keywords={`artikel, ${articleTitle}, yayasan, sosial, pendidikan, kesehatan`} facebook_pixel={FbPixel}>
   <!-- Breadcrumb -->
   <section class="bg-gray-50 py-4">
     <div class="container mx-auto px-4">
