@@ -1,6 +1,7 @@
 name: Deploy Astro
 
 on:
+  workflow_dispatch:
   repository_dispatch:
     types: [build-deploy-astro]
 
@@ -28,6 +29,6 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
-          local-dir: ./dist/      
-          server-dir: /yathim.or.id/  
+          local-dir: ./dist/
+          server-dir: /yathim.or.id/
           timeout: 190000
