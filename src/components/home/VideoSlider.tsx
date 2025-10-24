@@ -1,6 +1,7 @@
 // src/components/VideoSlider.tsx
 import { useEffect, useRef, useState } from "react";
 import { getYouTubeVideoId } from "../../utils";
+import YouTubeLazyEmbed from "./YouTubeLazyEmbed";
 
 interface Slide {
   link: string;
@@ -19,11 +20,14 @@ export default function VideoSlider({ slides }: Props) {
 
   const totalSlides = slides.length;
 
-  const updateSlide = (index: number) => {
+  const updateSlide = (index: number, stopAutoPlay = false) => {
     setCurrentSlide(index);
     if (slidesContainerRef.current) {
       const translateX = -index * 100;
       slidesContainerRef.current.style.transform = `translateX(${translateX}%)`;
+    }
+    if (stopAutoPlay) {
+      stopAutoPlayInterval();
     }
   };
 
@@ -38,12 +42,14 @@ export default function VideoSlider({ slides }: Props) {
   };
 
   const startAutoPlay = () => {
+    stopAutoPlayInterval();
     autoPlayIntervalRef.current = setInterval(nextSlide, 8000);
   };
 
-  const stopAutoPlay = () => {
+  const stopAutoPlayInterval = () => {
     if (autoPlayIntervalRef.current) {
       clearInterval(autoPlayIntervalRef.current);
+      autoPlayIntervalRef.current = null;
     }
   };
 
@@ -54,17 +60,23 @@ export default function VideoSlider({ slides }: Props) {
     updateSlide(0); // Initialize first slide
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "ArrowLeft") prevSlide();
-      if (e.key === "ArrowRight") nextSlide();
+      if (e.key === "ArrowLeft") {
+        prevSlide();
+        stopAutoPlayInterval(); // Stop autoplay on manual interaction
+      }
+      if (e.key === "ArrowRight") {
+        nextSlide();
+        stopAutoPlayInterval(); // Stop autoplay on manual interaction
+      }
     };
 
     document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      stopAutoPlay();
+      stopAutoPlayInterval();
       document.removeEventListener("keydown", handleKeyDown);
     };
-  }, [totalSlides]); // Only re-run if totalSlides changes
+  }, [totalSlides]);
 
   if (totalSlides === 0) return null;
 
@@ -82,13 +94,12 @@ export default function VideoSlider({ slides }: Props) {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                   <div className="aspect-video bg-gray-200 rounded-lg overflow-hidden">
                     {videoId ? (
-                      <iframe
-                        src={`https://www.youtube.com/embed/${videoId}`}
+                      <YouTubeLazyEmbed
+                        videoId={videoId}
                         title={slide.title}
-                        className="w-full h-full border-0"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowFullScreen
-                      ></iframe>
+                        active={currentSlide === index}
+                        onPlay={() => stopAutoPlayInterval()}
+                      />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400">
                         {/* SVG Placeholder */}
@@ -134,8 +145,11 @@ export default function VideoSlider({ slides }: Props) {
       {totalSlides > 1 && (
         <>
           <button
-            onClick={prevSlide}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg transition-all duration-200 z-10"
+            onClick={() => {
+              prevSlide();
+              stopAutoPlayInterval(); // Stop autoplay on manual navigation
+            }}
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-green-500/80 hover:bg-green-400 text-gray-800 p-3 rounded-full shadow-lg transition-all duration-200 z-10"
             aria-label="Previous video"
           >
             <svg
@@ -153,8 +167,11 @@ export default function VideoSlider({ slides }: Props) {
             </svg>
           </button>
           <button
-            onClick={nextSlide}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/80 hover:bg-white text-gray-800 p-3 rounded-full shadow-lg transition-all duration-200 z-10"
+            onClick={() => {
+              nextSlide();
+              stopAutoPlayInterval(); // Stop autoplay on manual navigation
+            }}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-green-500/80 hover:bg-green-400 text-gray-800 p-3 rounded-full shadow-lg transition-all duration-200 z-10"
             aria-label="Next video"
           >
             <svg
@@ -175,7 +192,7 @@ export default function VideoSlider({ slides }: Props) {
             {slides.map((_, index) => (
               <button
                 key={index}
-                onClick={() => updateSlide(index)}
+                onClick={() => updateSlide(index, true)} // Stop autoplay on dot click
                 className={`w-3 h-3 rounded-full transition-colors duration-200 ${
                   index === currentSlide
                     ? "bg-primary-600"
