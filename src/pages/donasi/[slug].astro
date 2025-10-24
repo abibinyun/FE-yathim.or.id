@@ -29,7 +29,7 @@ const { slug } = Astro.params;
 
 // Fetch campaign details from API
 let campaign = null;
-let banks = [];
+let banks: any = [];
 
 let STORAGE_URL = "https://laravel.yathim.or.id/storage";
 let SITE = "https://yathim.or.id";

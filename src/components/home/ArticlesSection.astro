@@ -1,0 +1,89 @@
+---
+// src/components/sections/ArticlesSection.astro
+// import { Image } from '@astrojs/image/components';
+import OptimizedImage from '../OptimizedImage.astro';
+import ShareButtons from '../ShareButtons.astro';
+import type { Article } from '../../types';
+
+interface Props {
+  articles: Article[];
+  siteUrl: string;
+  storageUrl: string;
+}
+
+const { articles, siteUrl, storageUrl } = Astro.props;
+---
+
+<section class="py-16">
+  <div class="container mx-auto px-4">
+    <div class="text-center mb-12">
+      <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Artikel Terbaru</h2>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto">Baca artikel terbaru tentang kegiatan dan program yayasan kami</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+      {
+        articles.length > 0 ? (
+          articles.slice(0, 4).map((article) => (
+            <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full relative">
+              <ShareButtons
+                url={`${siteUrl}/artikel/${article.slug}`}
+                title={`${article.title || article.name} - Yayasan Taman Harapan Insan Mulia`}
+                description={article.excerpt || article.description || `Baca artikel menarik: ${article.title || article.name}`}
+                image={article.image ? `${storageUrl}/${article.image}` : ""}
+                size="md"
+                className="absolute top-2 right-2 z-10"
+              />
+              <div class="aspect-video bg-gray-200">
+                {article.image ? (
+                  <OptimizedImage 
+                    src={`${storageUrl}/${article.image}`} 
+                    alt={article.title || article.name} 
+                    loading="lazy" 
+                    class="w-full h-full object-cover object-center" 
+                  />
+                ) : (
+                  <div class="w-full h-full flex items-center justify-center text-gray-400">
+                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+              <div class="p-6 flex flex-col justify-between flex-grow">
+                <div class="text-sm text-gray-500 mb-2">
+                  {new Date(article.published_at || article.created_at).toLocaleDateString("id-ID", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </div>
+                <h3 class="font-semibold text-xl mb-2 text-gray-900">{article.title.slice(0, 65) || article.name}</h3>
+                <p class="text-gray-600 mb-4 line-clamp-3">{article.excerpt || article.description}</p>
+                <a href={`/artikel/${article.slug}`} class="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium">
+                  Baca Selengkapnya
+                  <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  </svg>
+                </a>
+              </div>
+            </article>
+          ))
+        ) : (
+          <div class="col-span-full text-center py-12">
+            <p class="text-gray-500">Artikel sedang dimuat...</p>
+          </div>
+        )
+      }
+    </div>
+
+    <div class="text-center mt-12">
+      <a href="/artikel" class="bg-primary-600 hover:bg-primary-700 text-white font-semibold px-8 py-3 rounded-lg transition-colors inline-flex items-center">
+        Lihat Semua Artikel
+        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </a>
+    </div>
+  </div>
+</section>

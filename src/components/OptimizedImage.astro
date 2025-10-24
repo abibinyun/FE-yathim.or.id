@@ -1,0 +1,29 @@
+---
+// src/components/OptimizedImage.astro
+interface Props {
+  src: string;
+  alt: string;
+  class?: string;
+  loading?: 'lazy' | 'eager';
+}
+
+const { 
+  src, 
+  alt, 
+  class: className = '', 
+  loading = 'lazy' 
+} = Astro.props;
+---
+
+<!-- 
+  Kita menggunakan tag <img> biasa dengan atribut performa.
+  - loading="lazy": Menunda pemuatan gambar hingga mendekati viewport.
+  - decoding="async": Mencegah gambar memblokir rendering halaman lain.
+-->
+<img 
+  src={src} 
+  alt={alt} 
+  class={className} 
+  loading={loading}
+  decoding="async"
+/>

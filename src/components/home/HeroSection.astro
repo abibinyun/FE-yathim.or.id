@@ -1,0 +1,42 @@
+---
+// src/components/sections/HeroSection.astro
+import type { Banner } from '../../types';
+
+interface Props {
+  homeBanner: Banner | null;
+}
+
+const { homeBanner } = Astro.props;
+---
+
+<section class="bg-gradient-to-br from-primary-600 to-primary-800 text-white">
+  <div class="container mx-auto px-4 py-20">
+    <div class="max-w-4xl mx-auto text-center">
+      <h1 class="text-4xl md:text-6xl font-bold mb-6">
+        {homeBanner?.title || "Yayasan Taman Harapan"}<br />
+        <span class="text-secondary-300">Insan Mulia</span>
+      </h1>
+      <p class="text-xl md:text-2xl mb-8 text-primary-100">
+        {homeBanner?.subtitle || "Bersama membangun harapan untuk yatim dan dhuafa menuju kehidupan yang lebih baik"}
+      </p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        {homeBanner?.isButton && homeBanner?.button_text && homeBanner?.button_link ? (
+          <a href={`/${homeBanner.button_link}`} class="bg-secondary-500 hover:bg-secondary-600 text-gray-900 font-semibold px-8 py-4 rounded-lg transition-colors inline-flex items-center justify-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+            </svg>
+            {homeBanner.button_text}
+          </a>
+        ) : (
+          <a href="/donasi" class="bg-secondary-500 hover:bg-secondary-600 text-gray-900 font-semibold px-8 py-4 rounded-lg transition-colors inline-flex items-center justify-center">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+            </svg>
+            Lihat Program Donasi
+          </a>
+        )}
+        <a href="/tentang" class="border-2 border-white text-white hover:bg-white hover:text-primary-600 font-semibold px-8 py-4 rounded-lg transition-colors inline-flex items-center justify-center"> Tentang Kami </a>
+      </div>
+    </div>
+  </div>
+</section>
