@@ -9,10 +9,11 @@ let categories = [
   { id: 4, name: "Bencana Alam" },
   { id: 5, name: "Lingkungan" },
 ];
-let STORAGE_URL = "https://laravel.yathim.or.id/storage";
-let SITE = "https://yathim.or.id";
 
-// Initial load - fetch first page
+const API_URL = "https://sys.yathim.or.id/api";
+const STORAGE_URL = "https://sys.yathim.or.id/storage";
+const SITE = "https://yathim.or.id";
+
 let initialArticles: any[] = [];
 let initialPagination: any = {
   current_page: 1,
@@ -23,8 +24,7 @@ let initialPagination: any = {
 };
 
 try {
-  // Fetch initial articles (first page)
-  const res = await fetch("https://laravel.yathim.or.id/api/article?page=1");
+  const res = await fetch(`${API_URL}/article?page=1`);
   const json = await res.json();
   initialArticles = json.data?.data || [];
   initialPagination = {
@@ -39,7 +39,6 @@ try {
   console.error("Gagal mengambil data artikel:", err);
 }
 
-// Helper functions
 const formatDate = (dateString: string) => {
   const date = new Date(dateString);
   return date.toLocaleDateString("id-ID", {
@@ -62,7 +61,6 @@ const truncateText = (text: string, maxLength: number = 150) => {
   keywords="artikel, berita, kegiatan, program, yayasan, yatim, dhuafa, sosial, pendidikan, kesehatan"
   type="website"
 >
-  <!-- Hero Section -->
   <section class="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-16">
     <div class="container mx-auto px-4 text-center">
       <h1 class="text-3xl md:text-5xl font-bold mb-6">Artikel</h1>
@@ -70,7 +68,6 @@ const truncateText = (text: string, maxLength: number = 150) => {
     </div>
   </section>
 
-  <!-- Filter and Search Section -->
   <section class="py-8 bg-gray-50">
     <div class="container mx-auto px-4">
       <div class="bg-white rounded-lg shadow-sm border p-6">
@@ -128,7 +125,6 @@ const truncateText = (text: string, maxLength: number = 150) => {
     </div>
   </section>
 
-  <!-- Articles Section -->
   <section class="py-16">
     <div class="container mx-auto px-4">
       <div class="text-center mb-12">
@@ -136,13 +132,11 @@ const truncateText = (text: string, maxLength: number = 150) => {
         <p class="text-lg text-gray-600 max-w-2xl mx-auto">Ikuti perkembangan terbaru kegiatan dan program yayasan kami</p>
       </div>
 
-      <!-- Loading State -->
       <div id="loadingState" class="hidden text-center py-12">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
         <p class="mt-2 text-gray-600">Memuat artikel...</p>
       </div>
 
-      <!-- Articles Grid -->
       <div id="articlesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {
           initialArticles.map((article: any) => (
@@ -152,7 +146,7 @@ const truncateText = (text: string, maxLength: number = 150) => {
                   url={`${SITE}/artikel/${article.slug}`}
                   title={`${article.title} - Yayasan Taman Harapan Insan Mulia`}
                   description={article.excerpt.slice(0, 100) || `Baca artikel ${article.title} di website resmi Yayasan Taman Harapan Insan Mulia`}
-                  image={article.image ? `https://laravel.yathim.or.id/storage/${article.image}` : ""}
+                  image={article.image ? `${STORAGE_URL}/${article.image}` : ""}
                   size="sm"
                   className="absolute top-2 right-2 z-10"
                 />
@@ -196,12 +190,9 @@ const truncateText = (text: string, maxLength: number = 150) => {
         }
       </div>
 
-      <!-- Pagination -->
       <div id="paginationContainer" class="mt-12 flex justify-center">
-        <!-- Initial pagination for server-side render -->
         {initialPagination.last_page > 1 && (
           <nav class="flex items-center space-x-2" aria-label="Pagination">
-            <!-- Previous Button -->
             {initialPagination.current_page > 1 ? (
               <button onclick="goToPage(1)" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -216,7 +207,6 @@ const truncateText = (text: string, maxLength: number = 150) => {
               </span>
             )}
 
-            <!-- Page Numbers -->
             {Array.from({ length: initialPagination.last_page }, (_, i) => i + 1).map((page) => {
               const isActive = page === initialPagination.current_page;
               return (
@@ -230,7 +220,6 @@ const truncateText = (text: string, maxLength: number = 150) => {
               );
             })}
 
-            <!-- Next Button -->
             {initialPagination.current_page < initialPagination.last_page ? (
               <button onclick={`goToPage(${initialPagination.current_page + 1})`} class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -248,7 +237,6 @@ const truncateText = (text: string, maxLength: number = 150) => {
         )}
       </div>
 
-      <!-- Pagination Info -->
       <div id="paginationInfo" class="mt-6 text-center">
         <p class="text-sm text-gray-600">
           Halaman <span id="currentPageText">{initialPagination.current_page}</span> dari <span id="totalPagesText">{initialPagination.last_page}</span> 
@@ -259,13 +247,11 @@ const truncateText = (text: string, maxLength: number = 150) => {
   </section>
 
   <script>
-    // Global state
     let currentPage = 1;
     let currentCategory = "";
     let currentSort = "newest";
     let paginationData: any = {};
 
-    // DOM elements
     const categoryFilter = document.getElementById("categoryFilter") as HTMLSelectElement;
     const sortFilter = document.getElementById("sortFilter") as HTMLSelectElement;
     const applyFilterBtn = document.getElementById("applyFilter") as HTMLButtonElement;
@@ -278,19 +264,16 @@ const truncateText = (text: string, maxLength: number = 150) => {
     const totalPagesText = document.getElementById("totalPagesText") as HTMLElement;
     const totalItemsText = document.getElementById("totalItemsText") as HTMLElement;
 
-    // Read URL parameters on page load
     function readUrlParams() {
       const urlParams = new URLSearchParams(window.location.search);
       currentPage = parseInt(urlParams.get("page") || "1");
       currentCategory = urlParams.get("category") || "";
       currentSort = urlParams.get("sort") || "newest";
 
-      // Update form values
       if (categoryFilter) categoryFilter.value = currentCategory;
       if (sortFilter) sortFilter.value = currentSort;
     }
 
-    // Update URL without page reload
     function updateUrl() {
       const params = new URLSearchParams();
       if (currentPage > 1) params.set("page", currentPage.toString());
@@ -301,7 +284,6 @@ const truncateText = (text: string, maxLength: number = 150) => {
       window.history.pushState({}, "", newUrl);
     }
 
-    // Format date
     function formatDate(dateString: string) {
       const date = new Date(dateString);
       return date.toLocaleDateString("id-ID", {
@@ -311,19 +293,17 @@ const truncateText = (text: string, maxLength: number = 150) => {
       });
     }
 
-    // Truncate text
     function truncateText(text: string, maxLength: number = 150) {
       if (text.length <= maxLength) return text;
       return text.substring(0, maxLength) + "...";
     }
 
-    // Fetch articles
     async function fetchArticles() {
       try {
         if (loadingState) loadingState.classList.remove("hidden");
         if (articlesGrid) articlesGrid.classList.add("opacity-50");
 
-        let apiUrl = `https://laravel.yathim.or.id/api/article?page=${currentPage}`;
+        let apiUrl = `https://sys.yathim.or.id/api/article?page=${currentPage}`;
 
         if (currentCategory) {
           apiUrl += `&category_id=${currentCategory}`;
@@ -355,14 +335,12 @@ const truncateText = (text: string, maxLength: number = 150) => {
       }
     }
 
-    // Helper function to escape HTML attributes
     function escapeHtml(text: string) {
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
-    // Render articles
     function renderArticles(articles: any[]) {
       if (!articlesGrid) return;
 
@@ -386,7 +364,7 @@ const truncateText = (text: string, maxLength: number = 150) => {
             <!-- Share Button -->
             <div class="absolute top-2 right-2 z-10">
               <div class="relative">
-                <button class="share-toggle bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors" data-url="https://yathim.or.id/artikel/${article.slug}" data-title="${escapeHtml(article.title)} - Yayasan Taman Harapan Insan Mulia" data-description="${escapeHtml(article.excerpt || 'Baca artikel ' + article.title + ' di website resmi Yayasan Taman Harapan Insan Mulia')}" data-image="${article.image ? 'https://laravel.yathim.or.id/storage/' + article.image : ''}"
+                <button class="share-toggle bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors" data-url="https://yathim.or.id/artikel/${article.slug}" data-title="${escapeHtml(article.title)} - Yayasan Taman Harapan Insan Mulia" data-description="${escapeHtml(article.excerpt || 'Baca artikel ' + article.title + ' di website resmi Yayasan Taman Harapan Insan Mulia')}" data-image="${article.image ? 'https://sys.yathim.or.id/storage/' + article.image : ''}"
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
                   </svg>
@@ -439,7 +417,7 @@ const truncateText = (text: string, maxLength: number = 150) => {
 
             <div class="aspect-video bg-gray-200">
               ${article.image ?
-                `<img src="https://laravel.yathim.or.id/storage/${article.image}" alt="${article.title}" class="w-full h-full object-center object-cover" loading="lazy" />` :
+                `<img src="https://sys.yathim.or.id/storage/${article.image}" alt="${article.title}" class="w-full h-full object-center object-cover" loading="lazy" />` :
                 `<div class="w-full h-full flex items-center justify-center text-gray-400">
                   <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
@@ -473,18 +451,15 @@ const truncateText = (text: string, maxLength: number = 150) => {
         </article>
       `).join('');
 
-      // Initialize share buttons after rendering
       initializeShareButtons();
     }
 
-    // Initialize share buttons with event delegation
     function initializeShareButtons() {
       // Remove existing event listeners to avoid duplicates
       document.removeEventListener('click', handleShareButtonClick);
       document.addEventListener('click', handleShareButtonClick);
     }
 
-    // Handle all share button clicks with event delegation
     function handleShareButtonClick(e: Event) {
       const target = e.target as HTMLElement;
 
@@ -579,7 +554,6 @@ const truncateText = (text: string, maxLength: number = 150) => {
       }
     }
 
-    // Render pagination
     function renderPagination() {
       if (!paginationContainer) return;
       if (!paginationData || !paginationData.last_page) {
@@ -666,7 +640,6 @@ const truncateText = (text: string, maxLength: number = 150) => {
       paginationContainer.innerHTML = paginationHTML;
     }
 
-    // Update results info
     function updateResultsInfo() {
       if (paginationData && resultsText && currentPageText && totalPagesText && totalItemsText) {
         resultsText.textContent = `Menampilkan ${paginationData.from || 0} - ${paginationData.to || 0} dari ${paginationData.total || 0} artikel`;
@@ -676,14 +649,12 @@ const truncateText = (text: string, maxLength: number = 150) => {
       }
     }
 
-    // Go to page
     (window as any).goToPage = function (page: number) {
       currentPage = page;
       updateUrl();
       fetchArticles();
     };
 
-    // Event listeners
     if (applyFilterBtn) {
       applyFilterBtn.addEventListener("click", () => {
         if (categoryFilter && sortFilter) {
@@ -708,18 +679,14 @@ const truncateText = (text: string, maxLength: number = 150) => {
       });
     }
 
-    // Initialize on page load
     document.addEventListener("DOMContentLoaded", () => {
       readUrlParams();
 
-      // Initialize share buttons for initial server-side rendered content
       initializeShareButtons();
 
-      // Always fetch articles to ensure pagination is rendered
       fetchArticles();
     });
 
-    // Handle browser back/forward
     window.addEventListener("popstate", () => {
       readUrlParams();
       fetchArticles();

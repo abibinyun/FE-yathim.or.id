@@ -1,21 +1,17 @@
 ---
-// src/pages/index.astro
 import BaseLayout from "../layouts/BaseLayout.astro";
 
-// Import semua komponen section
 import HeroSection from "../components/home/HeroSection.astro";
 import VideoSlider from "../components/home/VideoSlider";
 import ProgramsSection from "../components/home/ProgramsSection.astro";
 import ArticlesSection from "../components/home/ArticlesSection.astro";
 
-// Import tipe data
 import type { Banner, Campaign, Article } from '../types';
 
-// Konstanta
-const STORAGE_URL = "https://laravel.yathim.or.id/storage";
+const API_URL = "https://sys.yathim.or.id/api";
+const STORAGE_URL = "https://sys.yathim.or.id/storage";
 const SITE = "https://yathim.or.id";
 
-// Fetch data dari API
 let banners: Banner[] = [];
 let homeBanner: Banner | null = null;
 let videoSlides: Banner['video_slides'] = [];
@@ -23,7 +19,7 @@ let featuredCampaigns: Campaign[] = [];
 let featuredArticles: Article[] = [];
 
 try {
-  const bannersResponse = await fetch("https://laravel.yathim.or.id/api/page-banner");
+  const bannersResponse = await fetch(`${API_URL}/page-banner`);
   if (bannersResponse.ok) {
     const bannersData = await bannersResponse.json();
     banners = bannersData.data?.data || bannersData.data || [];
@@ -37,7 +33,7 @@ try {
 }
 
 try {
-  const campaignsResponse = await fetch("https://laravel.yathim.or.id/api/campaign?featured=hot");
+  const campaignsResponse = await fetch(`${API_URL}/campaign?featured=hot`);
   if (campaignsResponse.ok) {
     const campaignsData = await campaignsResponse.json();
     featuredCampaigns = campaignsData.data?.data || campaignsData.data || [];
@@ -47,7 +43,7 @@ try {
 }
 
 try {
-  const articlesResponse = await fetch("https://laravel.yathim.or.id/api/article?featured=hot");
+  const articlesResponse = await fetch(`${API_URL}/article?featured=hot`);
   if (articlesResponse.ok) {
     const articlesData = await articlesResponse.json();
     featuredArticles = articlesData.data?.data || articlesData.data || [];
@@ -64,7 +60,6 @@ try {
   keywords="yayasan, donasi, yatim, dhuafa, sosial, pendidikan, kesehatan, pemberdayaan, amal, bantuan, zakat, infaq, sedekah"
   type="website"
 >
-  <!-- Gunakan komponen yang sudah dibuat -->
   <HeroSection homeBanner={homeBanner} />
 
   {videoSlides.length > 0 && (

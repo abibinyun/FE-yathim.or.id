@@ -1,7 +1,7 @@
 export async function GET() {
   const siteUrl = "https://yathim.or.id";
+  const API_URL = "https://sys.yathim.or.id/api";
 
-  // Static pages
   const staticPages = [
     { url: "", changefreq: "daily", priority: "1.0" },
     { url: "/donasi", changefreq: "daily", priority: "0.9" },
@@ -13,7 +13,6 @@ export async function GET() {
   let allCampaigns: any[] = [];
   let allArticles: any[] = [];
 
-  // Helper function to fetch all pages
   const fetchAllPages = async (
     baseUrl: string,
     dataKey = "data"
@@ -26,11 +25,11 @@ export async function GET() {
 
     while (hasMorePages) {
       try {
-        const url = `${baseUrl}?page=${currentPage}&per_page=50`; // Increase per_page for efficiency
+        const url = `${baseUrl}?page=${currentPage}&per_page=50`;
         console.log(`📄 Fetching page ${currentPage}: ${url}`);
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 15000); // 15 seconds per page
+        const timeoutId = setTimeout(() => controller.abort(), 15000);
 
         const response = await fetch(url, {
           method: "GET",
@@ -54,14 +53,10 @@ export async function GET() {
         const responseData = await response.json();
         console.log(`✅ Page ${currentPage} fetched successfully`);
 
-        // Handle different response structures
         let pageData = [];
         if (responseData.success && responseData.data) {
-          // Laravel pagination structure
           if (responseData.data.data && Array.isArray(responseData.data.data)) {
             pageData = responseData.data.data;
-
-            // Check if there are more pages
             const pagination = responseData.data;
             hasMorePages = currentPage < (pagination.last_page || 1);
 
@@ -70,14 +65,13 @@ export async function GET() {
             );
           } else if (Array.isArray(responseData.data)) {
             pageData = responseData.data;
-            hasMorePages = false; // Single page response
+            hasMorePages = false;
           }
         } else if (Array.isArray(responseData)) {
           pageData = responseData;
-          hasMorePages = false; // Direct array response
+          hasMorePages = false;
         }
 
-        // Add valid items to collection
         const validItems = pageData.filter(
           (item: any) =>
             item &&
@@ -88,8 +82,6 @@ export async function GET() {
 
         allData.push(...validItems);
         console.log(`📈 Total collected so far: ${allData.length} items`);
-
-        // Break if no data on this page
         if (pageData.length === 0) {
           console.log(`🔚 No data on page ${currentPage}, stopping`);
           break;
@@ -97,13 +89,11 @@ export async function GET() {
 
         currentPage++;
 
-        // Safety break to prevent infinite loops
         if (currentPage > 100) {
           console.warn("⚠️ Safety break: stopping at page 100");
           break;
         }
 
-        // Small delay between requests to be nice to the server
         if (hasMorePages) {
           await new Promise((resolve) => setTimeout(resolve, 100));
         }
@@ -114,7 +104,6 @@ export async function GET() {
           console.error("⏰ Request timed out");
         }
 
-        // Try once more with a delay, then break
         if (currentPage === 1) {
           console.log("🔄 Retrying first page after delay...");
           await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -131,12 +120,9 @@ export async function GET() {
     return allData;
   };
 
-  // Fetch all campaigns
   try {
     console.log("🎯 Starting campaigns fetch...");
-    allCampaigns = await fetchAllPages(
-      "https://laravel.yathim.or.id/api/campaign"
-    );
+    allCampaigns = await fetchAllPages(`${API_URL}/campaign`);
 
     console.log(`🎯 Final campaigns count: ${allCampaigns.length}`);
 
@@ -152,12 +138,9 @@ export async function GET() {
     allCampaigns = [];
   }
 
-  // Fetch all articles
   try {
     console.log("📝 Starting articles fetch...");
-    allArticles = await fetchAllPages(
-      "https://laravel.yathim.or.id/api/article"
-    );
+    allArticles = await fetchAllPages(`${API_URL}/article`);
 
     console.log(`📝 Final articles count: ${allArticles.length}`);
 
@@ -173,7 +156,6 @@ export async function GET() {
     allArticles = [];
   }
 
-  // Generate sitemap
   const currentDate = new Date().toISOString().split("T")[0];
 
   const generateUrl = (
@@ -190,14 +172,12 @@ export async function GET() {
   </url>`;
   };
 
-  // Static pages URLs
   const staticUrls = staticPages
     .map((page) =>
       generateUrl(`${siteUrl}${page.url}`, page.changefreq, page.priority)
     )
     .join("\n");
 
-  // Campaign URLs
   const campaignUrls = allCampaigns
     .map((campaign) => {
       const slug = encodeURIComponent(campaign.slug);
@@ -208,7 +188,6 @@ export async function GET() {
     })
     .join("\n");
 
-  // Article URLs
   const articleUrls = allArticles
     .map((article) => {
       const slug = encodeURIComponent(article.slug);
@@ -224,7 +203,6 @@ export async function GET() {
     })
     .join("\n");
 
-  // Combine all URLs
   const allUrls = [staticUrls, campaignUrls, articleUrls]
     .filter(Boolean)
     .join("\n");
@@ -237,7 +215,6 @@ export async function GET() {
 ${allUrls}
 </urlset>`;
 
-  // Final summary
   const totalUrls =
     staticPages.length + allCampaigns.length + allArticles.length;
   console.log(`\n🗺️ SITEMAP GENERATION COMPLETE:`);
@@ -246,7 +223,6 @@ ${allUrls}
   console.log(`   📝 Articles: ${allArticles.length}`);
   console.log(`   🌐 Total URLs: ${totalUrls}`);
 
-  // Warnings
   if (allCampaigns.length === 0) {
     console.warn("\n⚠️ WARNING: No campaigns found!");
   }

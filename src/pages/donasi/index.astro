@@ -8,10 +8,11 @@ let categories = [
   { id: 3, name: "Kesehatan" },
   { id: 4, name: "Bencana Alam" },
 ];
-let STORAGE_URL = "https://laravel.yathim.or.id/storage";
-let SITE = "https://yathim.or.id";
 
-// Initial load - fetch first page
+const API_URL = "https://sys.yathim.or.id/api";
+const STORAGE_URL = "https://sys.yathim.or.id/storage";
+const SITE = "https://yathim.or.id";
+
 let initialCampaigns: any[] = [];
 let initialPagination: any = {
   current_page: 1,
@@ -22,8 +23,7 @@ let initialPagination: any = {
 };
 
 try {
-  // Fetch initial campaigns (first page)
-  const res = await fetch("https://laravel.yathim.or.id/api/campaign?page=1");
+  const res = await fetch(`${API_URL}/campaign?page=1`);
   const json = await res.json();
   initialCampaigns = json.data?.data || [];
   initialPagination = {
@@ -38,7 +38,6 @@ try {
   console.error("Gagal mengambil data campaign:", err);
 }
 
-// Helper functions
 const formatCurrency = (amount: any) => {
   const number = parseFloat(amount) || 0;
   return new Intl.NumberFormat("id-ID", {
@@ -63,7 +62,6 @@ const calculateProgress = (raised: any, goal: any) => {
   keywords="donasi, program, bantuan, yayasan, yatim, dhuafa, sosial, amal, zakat, infaq, sedekah"
   type="website"
 >
-  <!-- Hero Section -->
   <section class="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-16">
     <div class="container mx-auto px-4 text-center">
       <h1 class="text-3xl md:text-5xl font-bold mb-6">Program Donasi</h1>
@@ -71,13 +69,11 @@ const calculateProgress = (raised: any, goal: any) => {
     </div>
   </section>
 
-  <!-- Filter and Search Section -->
   <section class="py-8 bg-gray-50">
     <div class="container mx-auto px-4">
       <div class="bg-white rounded-lg shadow-sm border p-6">
         <div class="space-y-4">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Category Filter -->
             <div>
               <label for="categoryFilter" class="block text-sm font-medium text-gray-700 mb-2">Kategori</label>
               <select id="categoryFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
@@ -86,7 +82,6 @@ const calculateProgress = (raised: any, goal: any) => {
               </select>
             </div>
 
-            <!-- Sort Filter -->
             <div>
               <label for="sortFilter" class="block text-sm font-medium text-gray-700 mb-2">Urutkan</label>
               <select id="sortFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent">
@@ -96,7 +91,6 @@ const calculateProgress = (raised: any, goal: any) => {
             </div>
           </div>
 
-          <!-- Filter Actions -->
           <div class="flex flex-col sm:flex-row gap-3 pt-4">
             <button id="applyFilter" type="button" class="bg-primary-600 hover:bg-primary-700 text-white font-medium px-6 py-2 rounded-md transition-colors flex items-center justify-center">
               <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,7 +111,6 @@ const calculateProgress = (raised: any, goal: any) => {
           </div>
         </div>
 
-        <!-- Results Info -->
         <div id="resultsInfo" class="mt-4 pt-4 border-t border-gray-200">
           <p class="text-sm text-gray-600">
             <span id="resultsText">Menampilkan {initialPagination.from} - {initialPagination.to} dari {initialPagination.total} program donasi</span>
@@ -127,7 +120,6 @@ const calculateProgress = (raised: any, goal: any) => {
     </div>
   </section>
 
-  <!-- Donation Programs -->
   <section class="py-16">
     <div class="container mx-auto px-4">
       <div class="text-center mb-12">
@@ -135,13 +127,11 @@ const calculateProgress = (raised: any, goal: any) => {
         <p class="text-lg text-gray-600 max-w-2xl mx-auto">Bergabunglah dengan program-program kami untuk membantu yatim dan dhuafa</p>
       </div>
 
-      <!-- Loading State -->
       <div id="loadingState" class="hidden text-center py-12">
         <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
         <p class="mt-2 text-gray-600">Memuat program donasi...</p>
       </div>
 
-      <!-- Programs Grid -->
       <div id="campaignsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {
           initialCampaigns.map((campaign: any) => (
@@ -151,7 +141,7 @@ const calculateProgress = (raised: any, goal: any) => {
                   url={`${SITE}/donasi/${campaign.slug}`}
                   title={`${campaign.title} - Yayasan Taman Harapan Insan Mulia`}
                   description={campaign.description || `Mari bersama-sama membantu program ${campaign.title}`}
-                  image={campaign.image ? `https://laravel.yathim.or.id/storage/${campaign.image}` : ""}
+                  image={campaign.image ? `${STORAGE_URL}/${campaign.image}` : ""}
                   size="sm"
                   className="absolute top-2 right-2 z-10"
                 />
@@ -202,12 +192,9 @@ const calculateProgress = (raised: any, goal: any) => {
         }
       </div>
 
-      <!-- Pagination -->
       <div id="paginationContainer" class="mt-12 flex justify-center">
-        <!-- Initial pagination for server-side render -->
         {initialPagination.last_page > 1 && (
           <nav class="flex items-center space-x-2" aria-label="Pagination">
-            <!-- Previous Button -->
             {initialPagination.current_page > 1 ? (
               <button onclick="goToPage(1)" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -222,7 +209,6 @@ const calculateProgress = (raised: any, goal: any) => {
               </span>
             )}
 
-            <!-- Page Numbers -->
             {Array.from({ length: initialPagination.last_page }, (_, i) => i + 1).map((page) => {
               const isActive = page === initialPagination.current_page;
               return (
@@ -236,7 +222,6 @@ const calculateProgress = (raised: any, goal: any) => {
               );
             })}
 
-            <!-- Next Button -->
             {initialPagination.current_page < initialPagination.last_page ? (
               <button onclick={`goToPage(${initialPagination.current_page + 1})`} class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -254,7 +239,6 @@ const calculateProgress = (raised: any, goal: any) => {
         )}
       </div>
 
-      <!-- Pagination Info -->
       <div id="paginationInfo" class="mt-6 text-center">
         <p class="text-sm text-gray-600">
           Halaman <span id="currentPageText">{initialPagination.current_page}</span> dari <span id="totalPagesText">{initialPagination.last_page}</span>
@@ -265,13 +249,11 @@ const calculateProgress = (raised: any, goal: any) => {
   </section>
 
   <script>
-    // Global state
     let currentPage = 1;
     let currentCategory = "";
     let currentSort = "newest";
     let paginationData: any = {};
 
-    // Initialize from server data
     const initialPagination = {
       current_page: 1,
       last_page: 1,
@@ -280,7 +262,6 @@ const calculateProgress = (raised: any, goal: any) => {
       to: 0,
     };
 
-    // DOM elements
     const categoryFilter = document.getElementById("categoryFilter") as HTMLSelectElement;
     const sortFilter = document.getElementById("sortFilter") as HTMLSelectElement;
     const applyFilterBtn = document.getElementById("applyFilter") as HTMLButtonElement;
@@ -293,19 +274,16 @@ const calculateProgress = (raised: any, goal: any) => {
     const totalPagesText = document.getElementById("totalPagesText") as HTMLElement;
     const totalItemsText = document.getElementById("totalItemsText") as HTMLElement;
 
-    // Read URL parameters on page load
     function readUrlParams() {
       const urlParams = new URLSearchParams(window.location.search);
       currentPage = parseInt(urlParams.get("page") || "1");
       currentCategory = urlParams.get("category") || "";
       currentSort = urlParams.get("sort") || "newest";
 
-      // Update form values
       if (categoryFilter) categoryFilter.value = currentCategory;
       if (sortFilter) sortFilter.value = currentSort;
     }
 
-    // Update URL without page reload
     function updateUrl() {
       const params = new URLSearchParams();
       if (currentPage > 1) params.set("page", currentPage.toString());
@@ -316,7 +294,6 @@ const calculateProgress = (raised: any, goal: any) => {
       window.history.pushState({}, "", newUrl);
     }
 
-    // Format currency
     function formatCurrency(amount: any) {
       const number = parseFloat(amount) || 0;
       return new Intl.NumberFormat("id-ID", {
@@ -327,20 +304,18 @@ const calculateProgress = (raised: any, goal: any) => {
       }).format(number);
     }
 
-    // Calculate progress
     function calculateProgress(raised: any, goal: any) {
       const raisedNum = parseFloat(raised) || 0;
       const goalNum = parseFloat(goal) || 1;
       return Math.min((raisedNum / goalNum) * 100, 100);
     }
 
-    // Fetch campaigns
     async function fetchCampaigns() {
       try {
         if (loadingState) loadingState.classList.remove("hidden");
         if (campaignsGrid) campaignsGrid.classList.add("opacity-50");
 
-        let apiUrl = `https://laravel.yathim.or.id/api/campaign?page=${currentPage}`;
+        let apiUrl = `https://sys.yathim.or.id/api/campaign?page=${currentPage}`;
 
         if (currentCategory) {
           apiUrl += `&category_id=${currentCategory}`;
@@ -372,14 +347,12 @@ const calculateProgress = (raised: any, goal: any) => {
       }
     }
 
-    // Helper function to escape HTML attributes
     function escapeHtml(text: string) {
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
-    // Render campaigns
     function renderCampaigns(campaigns: any[]) {
       if (!campaignsGrid) return;
 
@@ -405,7 +378,7 @@ const calculateProgress = (raised: any, goal: any) => {
             <!-- Share Button -->
             <div class="absolute top-2 right-2 z-10">
               <div class="relative">
-                <button class="share-toggle bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors" data-url="https://yathim.or.id/donasi/${campaign.slug}" data-title="${escapeHtml(campaign.title)} - Yayasan Taman Harapan Insan Mulia" data-description="${escapeHtml(campaign.description || 'Mari bersama-sama membantu program ' + campaign.title)}" data-image="${campaign.image ? 'https://laravel.yathim.or.id/storage/' + campaign.image : ''}"
+                <button class="share-toggle bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-full px-3 py-2 text-sm font-medium flex items-center gap-2 transition-colors" data-url="https://yathim.or.id/donasi/${campaign.slug}" data-title="${escapeHtml(campaign.title)} - Yayasan Taman Harapan Insan Mulia" data-description="${escapeHtml(campaign.description || 'Mari bersama-sama membantu program ' + campaign.title)}" data-image="${campaign.image ? 'https://sys.yathim.or.id/storage/' + campaign.image : ''}"
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z"/>
                   </svg>
@@ -459,7 +432,7 @@ const calculateProgress = (raised: any, goal: any) => {
             <div class="aspect-video bg-gray-200">
               ${
                 campaign.image
-                  ? `<img src="https://laravel.yathim.or.id/storage/${campaign.image}" alt="${campaign.title}" class="w-full h-full object-center object-cover" loading="lazy" />`
+                  ? `<img src="https://sys.yathim.or.id/storage/${campaign.image}" alt="${campaign.title}" class="w-full h-full object-center object-cover" loading="lazy" />`
                   : `<div class="w-full h-full flex items-center justify-center text-gray-400">
                   <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -501,22 +474,17 @@ const calculateProgress = (raised: any, goal: any) => {
         )
         .join("");
 
-      // Initialize share buttons after rendering
       initializeShareButtons();
     }
 
-    // Initialize share buttons with event delegation
     function initializeShareButtons() {
-      // Remove existing event listeners to avoid duplicates
       document.removeEventListener('click', handleShareButtonClick);
       document.addEventListener('click', handleShareButtonClick);
     }
 
-    // Handle all share button clicks with event delegation
     function handleShareButtonClick(e: Event) {
       const target = e.target as HTMLElement;
 
-      // Handle share toggle button
       if (target.closest('.share-toggle')) {
         e.preventDefault();
         const button = target.closest('.share-toggle') as HTMLElement;
@@ -527,7 +495,6 @@ const calculateProgress = (raised: any, goal: any) => {
         return;
       }
 
-      // Handle Facebook share
       if (target.closest('.share-facebook')) {
         e.preventDefault();
         const button = target.closest('.relative')?.querySelector('.share-toggle') as HTMLElement;
@@ -538,7 +505,6 @@ const calculateProgress = (raised: any, goal: any) => {
         return;
       }
 
-      // Handle Twitter share
       if (target.closest('.share-twitter')) {
         e.preventDefault();
         const button = target.closest('.relative')?.querySelector('.share-toggle') as HTMLElement;
@@ -550,7 +516,6 @@ const calculateProgress = (raised: any, goal: any) => {
         return;
       }
 
-      // Handle WhatsApp share
       if (target.closest('.share-whatsapp')) {
         e.preventDefault();
         const button = target.closest('.relative')?.querySelector('.share-toggle') as HTMLElement;
@@ -562,7 +527,6 @@ const calculateProgress = (raised: any, goal: any) => {
         return;
       }
 
-      // Handle Telegram share
       if (target.closest('.share-telegram')) {
         e.preventDefault();
         const button = target.closest('.relative')?.querySelector('.share-toggle') as HTMLElement;
@@ -574,7 +538,6 @@ const calculateProgress = (raised: any, goal: any) => {
         return;
       }
 
-      // Handle copy link
       if (target.closest('.share-copy')) {
         e.preventDefault();
         const shareButton = target.closest('.relative')?.querySelector('.share-toggle') as HTMLElement;
@@ -586,7 +549,6 @@ const calculateProgress = (raised: any, goal: any) => {
               alert('Link berhasil disalin!');
             });
           } else {
-            // Fallback for older browsers
             const textArea = document.createElement('textarea');
             textArea.value = url;
             document.body.appendChild(textArea);
@@ -599,7 +561,6 @@ const calculateProgress = (raised: any, goal: any) => {
         return;
       }
 
-      // Close share menus when clicking outside
       if (!target.closest('.share-toggle') && !target.closest('.share-menu')) {
         document.querySelectorAll('.share-menu').forEach(menu => {
           menu.classList.add('hidden');
@@ -607,7 +568,6 @@ const calculateProgress = (raised: any, goal: any) => {
       }
     }
 
-    // Render pagination
     function renderPagination() {
       if (!paginationContainer) return;
 
@@ -617,7 +577,6 @@ const calculateProgress = (raised: any, goal: any) => {
         return;
       }
 
-      // Always show pagination if there's data, even for single page
       if (paginationData.last_page <= 1) {
         paginationContainer.innerHTML = `
           <nav class="flex items-center space-x-2" aria-label="Pagination">
@@ -639,7 +598,6 @@ const calculateProgress = (raised: any, goal: any) => {
 
       let paginationHTML = '<nav class="flex items-center space-x-2" aria-label="Pagination">';
 
-      // Previous button
       if (paginationData.current_page > 1) {
         paginationHTML += `
           <button onclick="goToPage(${paginationData.current_page - 1})" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
@@ -658,7 +616,6 @@ const calculateProgress = (raised: any, goal: any) => {
         `;
       }
 
-      // Page numbers
       for (let i = 1; i <= paginationData.last_page; i++) {
         const isActive = i === paginationData.current_page;
         paginationHTML += `
@@ -670,7 +627,6 @@ const calculateProgress = (raised: any, goal: any) => {
         `;
       }
 
-      // Next button
       if (paginationData.current_page < paginationData.last_page) {
         paginationHTML += `
           <button onclick="goToPage(${paginationData.current_page + 1})" class="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 hover:text-gray-700 transition-colors">
@@ -693,7 +649,6 @@ const calculateProgress = (raised: any, goal: any) => {
       paginationContainer.innerHTML = paginationHTML;
     }
 
-    // Update results info
     function updateResultsInfo() {
       if (paginationData && resultsText && currentPageText && totalPagesText && totalItemsText) {
         resultsText.textContent = `Menampilkan ${paginationData.from || 0} - ${paginationData.to || 0} dari ${paginationData.total || 0} program donasi`;
@@ -703,20 +658,18 @@ const calculateProgress = (raised: any, goal: any) => {
       }
     }
 
-    // Go to page
     (window as any).goToPage = function (page: number) {
       currentPage = page;
       updateUrl();
       fetchCampaigns();
     };
 
-    // Event listeners
     if (applyFilterBtn) {
       applyFilterBtn.addEventListener("click", () => {
         if (categoryFilter && sortFilter) {
           currentCategory = categoryFilter.value;
           currentSort = sortFilter.value;
-          currentPage = 1; // Reset to first page
+          currentPage = 1;
           updateUrl();
           fetchCampaigns();
         }
@@ -735,18 +688,14 @@ const calculateProgress = (raised: any, goal: any) => {
       });
     }
 
-    // Initialize on page load
     document.addEventListener("DOMContentLoaded", () => {
       readUrlParams();
 
-      // Initialize share buttons for initial server-side rendered content
       initializeShareButtons();
 
-      // Always fetch campaigns to ensure pagination is rendered
       fetchCampaigns();
     });
 
-    // Handle browser back/forward
     window.addEventListener("popstate", () => {
       readUrlParams();
       fetchCampaigns();
