@@ -1,0 +1,69 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ArticleList from "../../components/artikel/ArticleList.tsx";
+import type { PaginateFunction } from "astro";
+
+export async function getStaticPaths({ paginate }: { paginate: PaginateFunction }) {
+  const res = await fetch(`https://sys.yathim.or.id/api/articles/all/slug`);
+  const allArticlesResponse = await res.json();
+  const allArticles = allArticlesResponse.data || [];
+
+  return paginate(allArticles, {
+    pageSize: 6,
+  });
+}
+
+const { page } = Astro.props;
+const pagination = page;
+
+// Kita perlu data lengkap untuk komponen, jadi kita fetch lagi (best practice untuk Astro full-static)
+let allArticlesForComponent: any[] = [];
+try {
+  const res = await fetch(`https://sys.yathim.or.id/api/articles/all/slug`);
+  const json = await res.json();
+  allArticlesForComponent = json.data || [];
+} catch (err) {
+  console.error("Gagal mengambil semua data artikel untuk komponen:", err);
+}
+
+// Kategori (dummy, bisa disesuaikan kalau API punya kategori asli)
+let categories = [
+  { id: 1, name: "Kegiatan" },
+  { id: 2, name: "Berita" },
+  { id: 3, name: "Inspirasi" },
+  { id: 4, name: "Lainnya" },
+];
+
+// Perbaiki URL Previous agar menuju ke /artikel, bukan /artikel/1
+const prevUrl = pagination.url.prev?.replace("/artikel/1", "/artikel") || null;
+const nextUrl = pagination.url.next;
+---
+
+<BaseLayout
+  title={`Artikel & Berita - Halaman ${pagination.currentPage}`}
+  description="Baca berbagai artikel inspiratif, berita kegiatan, dan kisah nyata dari Yayasan Taman Harapan Insan Mulia."
+  image="/images/image-yathim.jpeg"
+  keywords="artikel, berita, kegiatan, inspirasi, yayasan, yatim, sosial"
+  type="website"
+>
+  <section
+    class="bg-gradient-to-br from-primary-600 to-primary-800 text-white py-16"
+  >
+    <div class="container mx-auto px-4 text-center">
+      <h1 class="text-3xl md:text-5xl font-bold mb-6">Artikel & Berita</h1>
+      <p class="max-w-3xl mx-auto text-lg md:text-xl text-primary-100">
+        Dapatkan informasi terkini dan kisah inspiratif dari berbagai kegiatan kami.
+      </p>
+    </div>
+  </section>
+
+  <ArticleList
+    allArticles={allArticlesForComponent}
+    categories={categories}
+    currentPage={pagination.currentPage}
+    totalPages={pagination.lastPage}
+    prevUrl={prevUrl}
+    nextUrl={nextUrl}
+    client:load
+  />
+</BaseLayout>
