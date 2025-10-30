@@ -49,3 +49,19 @@ export const getYouTubeVideoId = (url: string): string | null => {
   const match = url.match(regExp);
   return match && match[2].length === 11 ? match[2] : null;
 };
+
+export function formatCurrency(amount: any) {
+  const number = parseFloat(amount) || 0;
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(number);
+}
+
+export function calculateProgress(raised: any, goal: any) {
+  const raisedNum = parseFloat(raised) || 0;
+  const goalNum = parseFloat(goal) || 1;
+  return Math.min((raisedNum / goalNum) * 100, 100);
+}

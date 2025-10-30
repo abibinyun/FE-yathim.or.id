@@ -1,4 +1,4 @@
-name: Deploy Astro
+name: Deploy Astro with Backup
 
 on:
   workflow_dispatch:
@@ -8,27 +8,59 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
+      # --- Checkout repo ---
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      # --- Setup Node.js ---
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 20
 
-      - name: Install deps
+      # --- Install dependencies ---
+      - name: Install dependencies
         run: npm install
 
+      # --- Build Astro project ---
       - name: Build Astro
         run: npm run build
 
-      - name: Upload via FTP (contoh Plesk FTP)
+      # --- (Opsional) lihat isi hasil build ---
+      - name: List built files
+        run: ls -l ./dist
+
+      # --- Backup: Download current files from FTP ---
+      - name: Backup current files from FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
-          local-dir: ./dist/
-          server-dir: /yathim.or.id/
+          server-dir: /yathim.or.id/ # Direktori di FTP yang akan dibackup
+          local-dir: ./backup/ # Tempat backup di local repository
+          timeout: 190000
+
+      # --- HAPUS SEMUA FILE DI SERVER FTP ---
+      - name: Delete all files from FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          server-dir: /yathim.or.id/ # Direktori yang akan dihapus
+          dangerous-clean-slate: true # ⚠️ Ini akan menghapus SEMUA file di folder tujuan!
+          timeout: 190000
+
+      # --- UPLOAD HASIL BUILD KE FTP ---
+      - name: Upload new build via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          local-dir: ./dist/ # Hasil build Astro
+          server-dir: /yathim.or.id/ # Folder tujuan di server
           timeout: 190000
