@@ -1,15 +1,34 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import CampaignList from "../../components/donasi/CampaignList.tsx";
+import type { PaginateFunction } from "astro";
 
-// Ambil SEMUA campaign
-let allCampaigns: any[] = [];
+export async function getStaticPaths({
+  paginate,
+}: {
+  paginate: PaginateFunction;
+}) {
+  const res = await fetch(`https://sys.yathim.or.id/api/campaigns/all/slug`);
+  const allCampaignsResponse = await res.json();
+  const allCampaigns = allCampaignsResponse.data;
+
+  return paginate(allCampaigns, {
+    pageSize: 6,
+  });
+}
+
+const { page } = Astro.props;
+const pagination = page;
+
+// Kita perlu data lengkap untuk komponen, jadi kita fetch lagi.
+// Ini adalah solusi yang cukup umum untuk pola ini di Astro.
+let allCampaignsForComponent: any[] = [];
 try {
-  const res = await fetch("https://sys.yathim.or.id/api/campaigns/all/slug");
+  const res = await fetch(`https://sys.yathim.or.id/api/campaigns/all/slug`);
   const json = await res.json();
-  allCampaigns = json.data || [];
+  allCampaignsForComponent = json.data || [];
 } catch (err) {
-  console.error("Gagal mengambil semua data campaign:", err);
+  console.error("Gagal mengambil semua data campaign untuk komponen:", err);
 }
 
 let categories = [
@@ -19,11 +38,13 @@ let categories = [
   { id: 4, name: "Bencana Alam" },
 ];
 
-const nextUrl = "donasi/2";
+// Perbaiki URL Previous agar menuju ke /donasi, bukan /donasi/1
+const prevUrl = pagination.url.prev?.replace("/donasi/1", "/donasi") || null;
+const nextUrl = pagination.url.next;
 ---
 
 <BaseLayout
-  title="Program Donasi - Yayasan Taman Harapan Insan Mulia"
+  title="Program Donasi - Halaman {pagination.currentPage}"
   description="Pilih program donasi yang sesuai dengan keinginan Anda. Setiap donasi akan membuat perbedaan besar bagi mereka yang membutuhkan."
   image="/images/image-yathim.jpeg"
   keywords="donasi, program, bantuan, yayasan, yatim, dhuafa, sosial, amal, zakat, infaq, sedekah"
@@ -41,10 +62,13 @@ const nextUrl = "donasi/2";
     </div>
   </section>
 
+  <!-- Gunakan komponen React yang sama -->
   <CampaignList
-    allCampaigns={allCampaigns}
+    allCampaigns={allCampaignsForComponent}
     categories={categories}
-    currentPage={1}
+    currentPage={pagination.currentPage}
+    totalPages={pagination.lastPage}
+    prevUrl={prevUrl}
     nextUrl={nextUrl}
     client:load
   />
