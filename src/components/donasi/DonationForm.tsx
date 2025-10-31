@@ -85,7 +85,6 @@ const DonationForm: React.FC<Props> = ({ campaign, banks }) => {
       const response = await fetch(`https://sys.yathim.or.id/api/donation`, {
         method: "POST",
         body: formData,
-        credentials: "include",
       });
 
       if (response.ok) {
@@ -262,7 +261,7 @@ const DonationForm: React.FC<Props> = ({ campaign, banks }) => {
               <span>Jumlah:</span>
               <span className="font-bold">Rp {amount}</span>
             </p>
-            <p className="flex justify-between text-sm text-gray-600">
+            <div className="flex justify-between text-sm text-gray-600">
               <span>Bank:</span>
               {/* Tampilkan detail bank berdasarkan ID yang dipilih */}
               {banks && Array.isArray(banks.data) && selectedBank
@@ -307,7 +306,7 @@ const DonationForm: React.FC<Props> = ({ campaign, banks }) => {
                       </div>
                     ))
                 : null}
-            </p>
+            </div>
             {message && (
               <p className="flex justify-between text-sm text-gray-600">
                 <span>Pesan:</span>

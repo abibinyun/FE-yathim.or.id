@@ -24,7 +24,9 @@ let categories = [
 const PAGE_SIZE = 6;
 const totalPages = Math.ceil(allArticles.length / PAGE_SIZE);
 const currentPage = 1;
-const nextUrl = totalPages > 1 ? "artikel/2" : null;
+const currentUrl = Astro.url.pathname;
+
+const nextUrl = totalPages > 1 ? `${currentUrl}/2` : null;
 ---
 
 <BaseLayout

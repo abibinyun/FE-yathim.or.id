@@ -336,10 +336,8 @@ const CampaignList: React.FC<CampaignListProps> = ({
             ))}
           </div>
 
-          {/* Tombol Load More / Paginasi */}
+          {/* Pagination */}
           <div className="mt-12 text-center">
-
-            {/* Jika tidak ada filter dan kita berada di halaman paginasi, tampilkan Previous/Next */}
             {!isFiltered && (currentPage > 1 || nextUrl) && (
               <nav
                 className="flex items-center justify-center space-x-2"
@@ -350,28 +348,10 @@ const CampaignList: React.FC<CampaignListProps> = ({
                     href={prevUrl}
                     className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M15 19l-7-7 7-7"
-                      />
-                    </svg>
+                    ←
                   </a>
                 )}
-                {currentPage === 1 && (
-                  <span className="px-3 py-2 text-sm font-medium text-gray-100 bg-green-600 border border-gray-300 rounded-md">
-                    {currentPage}
-                  </span>
-                )}
-                {/* Page Numbers */}
-                {getPaginationNumbers(currentPage, totalPages).map(
+                {getPaginationNumbers(currentPage, totalPages || 1).map(
                   (page: any, index: any) => (
                     <span key={index}>
                       {page === "..." ? (
@@ -380,7 +360,7 @@ const CampaignList: React.FC<CampaignListProps> = ({
                         </span>
                       ) : (
                         <a
-                          href={page === 1 ? "/donasi" : `/donasi/${page}`}
+                          href={page === 1 ? "/artikel" : `/artikel/${page}`}
                           className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                             currentPage === page
                               ? "bg-primary-600 text-white border border-primary-600"
@@ -401,19 +381,7 @@ const CampaignList: React.FC<CampaignListProps> = ({
                     href={nextUrl}
                     className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                   >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M9 5l7 7-7 7"
-                      />
-                    </svg>
+                    →
                   </a>
                 )}
               </nav>
