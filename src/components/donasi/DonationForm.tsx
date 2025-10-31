@@ -85,6 +85,10 @@ const DonationForm: React.FC<Props> = ({ campaign, banks }) => {
       const response = await fetch(`https://sys.yathim.or.id/api/donation`, {
         method: "POST",
         body: formData,
+        credentials: "include",
+        headers: {
+          Accept: "application/json",
+        },
       });
 
       if (response.ok) {
