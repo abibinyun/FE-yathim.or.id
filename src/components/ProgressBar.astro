@@ -1,18 +1,12 @@
 ---
-// src/components/ProgressBar.astro
-
-// 1. Definisikan props dengan TypeScript untuk keamanan tipe
 interface Props {
   progress: number;
-  // Anda bisa menambahkan props lain seperti class untuk kustomisasi
   class?: string;
 }
 
-// 2. Ambil props dari Astro.props
 const { progress, class: className } = Astro.props;
-
-// 3. Validasi nilai progress agar selalu antara 0 dan 100
 const sanitizedProgress = Math.max(0, Math.min(100, progress));
+const ariaLabel = `${sanitizedProgress}% Selesai`;
 ---
 
 <div
@@ -20,12 +14,16 @@ const sanitizedProgress = Math.max(0, Math.min(100, progress));
   aria-valuenow={sanitizedProgress}
   aria-valuemin="0"
   aria-valuemax="100"
+  aria-label={ariaLabel}
   class:list={[
     "w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700",
-    className, // Memungkinkan penambahan class dari luar
+    className,
   ]}
 >
-  <div class="bg-green-600 h-2.5 rounded-full" style={{ width: `${sanitizedProgress}%` }}>
-    <span class="sr-only">{sanitizedProgress}% Selesai</span>
+  <div
+    class="bg-green-600 h-2.5 rounded-full"
+    style={{ width: `${sanitizedProgress}%` }}
+  >
+    <span class="sr-only">{ariaLabel}</span>
   </div>
 </div>

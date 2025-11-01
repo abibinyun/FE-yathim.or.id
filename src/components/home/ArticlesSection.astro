@@ -20,59 +20,109 @@ const { articles, siteUrl, storageUrl } = Astro.props;
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-      {
-        articles.length > 0 ? (
-          articles.slice(0, 4).map((article) => (
-            <article class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full relative">
-              <ShareButtons
-                url={`${siteUrl}/artikel/${article.slug}`}
-                title={`${article.title || article.name} - Yayasan Taman Harapan Insan Mulia`}
-                description={article.excerpt || article.description || `Baca artikel menarik: ${article.title || article.name}`}
-                image={article.image ? `${storageUrl}/${article.image}` : ""}
-                size="md"
-                className="absolute top-2 right-2 z-10"
-              />
-              <div class="aspect-video bg-gray-200">
-                {article.image ? (
-                  <OptimizedImage 
-                    src={`${storageUrl}/${article.image}`} 
-                    alt={article.title || article.name} 
-                    loading="lazy" 
-                    class="w-full h-full object-cover object-center" 
-                  />
-                ) : (
-                  <div class="w-full h-full flex items-center justify-center text-gray-400">
-                    <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-              <div class="p-6 flex flex-col justify-between flex-grow">
-                <div class="text-sm text-gray-500 mb-2">
-                  {new Date(article.published_at || article.created_at).toLocaleDateString("id-ID", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
+      {articles.length > 0 ? (
+        articles.slice(0, 4).map((article) => (
+          <article
+            class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col relative"
+          >
+            {/* Tombol share */}
+            <ShareButtons
+              url={`${siteUrl}/artikel/${article.slug}`}
+              title={`${article.title || article.name} - Yayasan Taman Harapan Insan Mulia`}
+              description={
+                article.excerpt ||
+                article.description ||
+                `Baca artikel menarik: ${article.title || article.name}`
+              }
+              image={article.image ? `${storageUrl}/${article.image}` : ""}
+              size="md"
+              className="absolute top-2 right-2 z-10 shadow-md"
+            />
+
+            {/* Gambar artikel dengan rasio tetap */}
+            <div class="relative aspect-video bg-gray-200 overflow-hidden">
+              {article.image ? (
+                <OptimizedImage
+                  src={`${storageUrl}/${article.image}`}
+                  alt={article.title || article.name}
+                  loading="lazy"
+                  class="absolute inset-0 w-full h-full object-cover object-center"
+                />
+              ) : (
+                <div class="w-full h-full flex items-center justify-center text-gray-400">
+                  <svg
+                    class="w-12 h-12"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z"
+                    />
+                  </svg>
                 </div>
-                <h3 class="font-semibold text-xl mb-2 text-gray-900">{article.title.slice(0, 65) || article.name}</h3>
-                <p class="text-gray-600 mb-4 line-clamp-3">{article.excerpt || article.description}</p>
-                <a href={`/artikel/${article.slug}`} class="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium">
+              )}
+            </div>
+
+            {/* Isi artikel */}
+            <div class="p-6 flex flex-col flex-grow">
+              {/* Tanggal */}
+              <div class="text-sm text-gray-500 mb-2">
+                {new Date(
+                  article.published_at || article.created_at
+                ).toLocaleDateString("id-ID", {
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </div>
+
+              {/* Judul */}
+              <h3 class="font-semibold text-xl mb-2 text-gray-900 line-clamp-2">
+                {article.title || article.name}
+              </h3>
+
+              {/* Deskripsi */}
+              <p class="text-gray-600 mb-4 line-clamp-3">
+                {article.excerpt || article.description}
+              </p>
+
+              {/* Tombol baca selengkapnya (selalu di bawah) */}
+              <div class="mt-auto">
+                <a
+                  href={`/artikel/${article.slug}`}
+                  class="inline-flex items-center text-primary-800 hover:text-primary-900 font-medium transition-colors underline-offset-4 hover:underline"
+                  aria-label={`Baca selengkapnya tentang ${article.title}`}
+                >
                   Baca Selengkapnya
-                  <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                  <svg
+                    class="w-4 h-4 ml-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    aria-hidden="true"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M9 5l7 7-7 7"
+                    />
                   </svg>
                 </a>
+
               </div>
-            </article>
-          ))
-        ) : (
-          <div class="col-span-full text-center py-12">
-            <p class="text-gray-500">Artikel sedang dimuat...</p>
-          </div>
-        )
-      }
+            </div>
+          </article>
+        ))
+      ) : (
+        <div class="col-span-full text-center py-12">
+          <p class="text-gray-500">Artikel sedang dimuat...</p>
+        </div>
+      )}
     </div>
 
     <div class="text-center mt-12">

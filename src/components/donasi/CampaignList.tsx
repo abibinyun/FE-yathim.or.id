@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { calculateProgress, formatCurrency } from "../../utils";
 
-// Definisikan tipe untuk data campaign
 interface Campaign {
   id: number;
   title: string;
@@ -10,7 +9,7 @@ interface Campaign {
   category_id: number;
   goal: string;
   amount_raised: string;
-  created_at: string; // Tambahkan created_at untuk sorting
+  created_at: string;
 }
 
 interface CampaignListProps {
@@ -32,19 +31,13 @@ const CampaignList: React.FC<CampaignListProps> = ({
 }) => {
   const PAGE_SIZE = 6;
   const STORAGE_URL = "https://sys.yathim.or.id/storage";
-  const SITE_URL = "https://yathim.or.id";
 
-  // State untuk daftar yang ditampilkan
   const [displayedCampaigns, setDisplayedCampaigns] = useState<Campaign[]>([]);
-  // State untuk data "load more"
   const [remainingData, setRemainingData] = useState<Campaign[]>([]);
-  // State untuk filter
   const [filterCategory, setFilterCategory] = useState<string>("");
   const [sortOrder, setSortOrder] = useState<string>("newest");
-  // State untuk melacak apakah filter sedang aktif
   const [isFiltered, setIsFiltered] = useState(false);
 
-  // Effect untuk menginisialisasi daftar berdasarkan halaman saat ini
   useEffect(() => {
     const startIndex = (currentPage - 1) * PAGE_SIZE;
     const endIndex = startIndex + PAGE_SIZE;
@@ -93,22 +86,6 @@ const CampaignList: React.FC<CampaignListProps> = ({
     setIsFiltered(false);
   };
 
-  const loadMore = () => {
-    // Jika filter aktif, muat lebih banyak dari daftar yang sudah difilter
-    if (isFiltered) {
-      const nextBatch = remainingData.slice(0, PAGE_SIZE);
-      const newRemaining = remainingData.slice(PAGE_SIZE);
-      setDisplayedCampaigns((prev) => [...prev, ...nextBatch]);
-      setRemainingData(newRemaining);
-    } else {
-      // Jika tidak ada filter, navigasi ke halaman statis berikutnya
-      if (nextUrl) {
-        window.location.href = nextUrl;
-      }
-    }
-  };
-
-  // Fungsi helper untuk menghasilkan array nomor halaman dengan ellipsis
   const getPaginationNumbers = (current: number, total: number) => {
     const delta = 2; // Jumlah halaman di kiri dan kanan halaman aktif
     const range = [];
@@ -360,7 +337,7 @@ const CampaignList: React.FC<CampaignListProps> = ({
                         </span>
                       ) : (
                         <a
-                          href={page === 1 ? "/artikel" : `/artikel/${page}`}
+                          href={page === 1 ? "/donasi" : `/donasi/${page}`}
                           className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${
                             currentPage === page
                               ? "bg-primary-600 text-white border border-primary-600"

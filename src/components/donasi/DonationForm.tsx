@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 
-// Definisikan tipe Props
 interface Props {
-  campaign: any; // Ganti dengan tipe yang sesuai jika ada
+  campaign: any;
   banks: any;
 }
 
@@ -12,9 +11,12 @@ const DonationForm: React.FC<Props> = ({ campaign, banks }) => {
   const [amount, setAmount] = useState("");
   const [anonymous, setAnonymous] = useState(false);
   const [selectedBank, setSelectedBank] = useState("");
+  const [userSelectedBank, setUserSelectedBank] = useState("");
   const [proofFile, setProofFile] = useState(null);
   const [message, setMessage] = useState("");
   const [fbTracked, setFbTracked] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [dots, setDots] = useState("");
 
   const campaignSlug = campaign.slug;
 
@@ -37,6 +39,32 @@ const DonationForm: React.FC<Props> = ({ campaign, banks }) => {
       setFbTracked(true);
     }
   }, [fbTracked, amount, campaign.title, campaignSlug]);
+
+  useEffect(() => {
+    const result = banks?.data?.find(
+      (item: any) => item.id === Number(selectedBank)
+    );
+
+    const selected =
+      result?.name !== "QRIS"
+        ? `${result?.name} - ${result?.account_number}`
+        : "QRIS";
+
+    setUserSelectedBank(selected);
+  }, [selectedBank, banks]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setDots("");
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setDots((prev) => (prev.length < 3 ? prev + "." : ""));
+    }, 500); // tiap 0.5 detik update titik
+
+    return () => clearInterval(interval);
+  }, [isLoading]);
 
   const handleAmountClick = (value: any) => {
     setAmount(value);
@@ -68,15 +96,28 @@ const DonationForm: React.FC<Props> = ({ campaign, banks }) => {
     return true;
   };
 
-  const handleFormSubmit = async (e: any) => {
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
+
+    if (!userSelectedBank) {
+      alert("Silakan pilih bank terlebih dahulu.");
+      setIsLoading(false);
+      return;
+    }
+    if (!amount) {
+      alert("Silakan masukkan jumlah donasi.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       const formData = new FormData();
       formData.append("slug", campaignSlug);
-      formData.append("amount", amount);
-      formData.append("notes", message); // Add the message to the form data
+      formData.append("amount", amount.toString());
+      formData.append("notes", message || "");
       formData.append("payment_method", "manual_transfer");
-      formData.append("bank_account", selectedBank);
+      formData.append("bank_account", userSelectedBank);
 
       if (proofFile) {
         formData.append("payment_proof", proofFile);
@@ -91,14 +132,17 @@ const DonationForm: React.FC<Props> = ({ campaign, banks }) => {
         },
       });
 
-      if (response.ok) {
-        setStep(3);
-      } else {
-        throw new Error("Donation failed");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Donation failed");
       }
-    } catch (err) {
+
+      setStep(3);
+    } catch (err: any) {
       console.error(err);
-      alert("Terjadi kesalahan saat mengirim donasi. Silakan coba lagi.");
+      alert(`Terjadi kesalahan saat mengirim donasi: ${err.message}`);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -107,6 +151,7 @@ const DonationForm: React.FC<Props> = ({ campaign, banks }) => {
       <div className="text-center font-semibold md:text-4xl text-2xl mb-6 border-b pb-5 shadow-md rounded-lg">
         Form Donasi
       </div>
+
       {/* Stepper Indicator */}
       <div className="flex justify-between mb-6">
         <div
@@ -353,8 +398,9 @@ const DonationForm: React.FC<Props> = ({ campaign, banks }) => {
               <button
                 type="submit"
                 className="w-full bg-primary-600 hover:bg-primary-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors"
+                disabled={isLoading}
               >
-                Kirim Donasi
+                {isLoading ? `Loading${dots}` : "Kirim Donasi"}
               </button>
             </div>
           </form>
@@ -372,9 +418,9 @@ const DonationForm: React.FC<Props> = ({ campaign, banks }) => {
               viewBox="0 0 24 24"
             >
               <path
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
                 d="M5 13l4 4L19 7"
               ></path>
             </svg>

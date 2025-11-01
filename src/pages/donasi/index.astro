@@ -2,7 +2,6 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import CampaignList from "../../components/donasi/CampaignList.tsx";
 
-// Ambil SEMUA campaign
 let allCampaigns: any[] = [];
 try {
   const res = await fetch("https://sys.yathim.or.id/api/campaigns/all/slug");
@@ -24,7 +23,7 @@ const totalPages = Math.ceil(allCampaigns.length / PAGE_SIZE);
 const currentPage = 1;
 const currentUrl = Astro.url.pathname;
 
-const nextUrl = totalPages > 1 ? `${currentUrl}/2` : null;
+const nextUrl = totalPages > 1 ? `${currentUrl}2` : null;
 ---
 
 <BaseLayout

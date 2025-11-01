@@ -2,7 +2,6 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import ArticleList from "../../components/artikel/ArticleList.tsx";
 
-// Ambil SEMUA artikel
 let allArticles: any[] = [];
 try {
   const res = await fetch("https://sys.yathim.or.id/api/articles/all/slug");
@@ -12,7 +11,6 @@ try {
   console.error("Gagal mengambil semua data artikel:", err);
 }
 
-// Kategori (contoh, bisa disesuaikan jika API artikel memiliki kategori asli)
 let categories = [
   { id: 1, name: "Kegiatan" },
   { id: 2, name: "Berita" },
@@ -20,13 +18,12 @@ let categories = [
   { id: 4, name: "Lainnya" },
 ];
 
-// Pagination config
 const PAGE_SIZE = 6;
 const totalPages = Math.ceil(allArticles.length / PAGE_SIZE);
 const currentPage = 1;
 const currentUrl = Astro.url.pathname;
 
-const nextUrl = totalPages > 1 ? `${currentUrl}/2` : null;
+const nextUrl = totalPages > 1 ? `${currentUrl}2` : null;
 ---
 
 <BaseLayout

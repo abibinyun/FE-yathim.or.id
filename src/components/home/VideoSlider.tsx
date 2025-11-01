@@ -117,7 +117,7 @@ export default function VideoSlider({ slides }: Props) {
                       href={slide.link}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center text-primary-600 hover:text-primary-700 font-medium"
+                      className="inline-flex items-center p-1 rounded-md bg-green-600 text-white hover:text-gray-100 hover:bg-green-500 font-medium transition-colors"
                     >
                       Tonton di YouTube
                       <svg
@@ -144,13 +144,14 @@ export default function VideoSlider({ slides }: Props) {
 
       {totalSlides > 1 && (
         <>
+          {/* Tombol kiri */}
           <button
             onClick={() => {
               prevSlide();
-              stopAutoPlayInterval(); // Stop autoplay on manual navigation
+              stopAutoPlayInterval();
             }}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-green-500/80 hover:bg-green-400 text-gray-800 p-3 rounded-full shadow-lg transition-all duration-200 z-10"
-            aria-label="Previous video"
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-green-500/80 hover:bg-green-400 text-gray-800 p-3 rounded-full shadow-lg transition-all duration-200 z-10 focus:outline-none focus:ring-2 focus:ring-green-400"
+            aria-label="Video sebelumnya"
           >
             <svg
               className="w-6 h-6"
@@ -166,13 +167,15 @@ export default function VideoSlider({ slides }: Props) {
               />
             </svg>
           </button>
+
+          {/* Tombol kanan */}
           <button
             onClick={() => {
               nextSlide();
-              stopAutoPlayInterval(); // Stop autoplay on manual navigation
+              stopAutoPlayInterval();
             }}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-green-500/80 hover:bg-green-400 text-gray-800 p-3 rounded-full shadow-lg transition-all duration-200 z-10"
-            aria-label="Next video"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-green-500/80 hover:bg-green-400 text-gray-800 p-3 rounded-full shadow-lg transition-all duration-200 z-10 focus:outline-none focus:ring-2 focus:ring-green-400"
+            aria-label="Video berikutnya"
           >
             <svg
               className="w-6 h-6"
@@ -188,18 +191,22 @@ export default function VideoSlider({ slides }: Props) {
               />
             </svg>
           </button>
+
+          {/* Navigasi dots */}
           <div className="flex justify-center mt-8 space-x-2">
             {slides.map((_, index) => (
               <button
                 key={index}
-                onClick={() => updateSlide(index, true)} // Stop autoplay on dot click
-                className={`w-3 h-3 rounded-full transition-colors duration-200 ${
+                onClick={() => updateSlide(index, true)}
+                className={`w-2 h-2 p-2 rounded-full flex items-center justify-center transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-400 ${
                   index === currentSlide
                     ? "bg-primary-600"
                     : "bg-gray-300 hover:bg-gray-400"
                 }`}
-                aria-label={`Go to slide ${index + 1}`}
-              ></button>
+                aria-label={`Pergi ke slide ${index + 1}`}
+              >
+                <span className="sr-only">{`Slide ${index + 1}`}</span>
+              </button>
             ))}
           </div>
         </>
