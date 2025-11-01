@@ -1,23 +1,11 @@
-User-agent: *
-Allow: /
-
-# Sitemap
 Sitemap: https://yathim.or.id/sitemap.xml
 
-# Disallow admin and private areas
+User-agent: *
 Disallow: /admin/
 Disallow: /api/
-Disallow: /_astro/
 Disallow: /debug.php
 
-# Allow important pages
 Allow: /
-Allow: /artikel
-Allow: /donasi
-Allow: /galeri
-Allow: /tentang
-Allow: /artikel/*
-Allow: /donasi/*
 
-# Crawl delay (optional)
-Crawl-delay: 1
+User-agent: Googlebot
+Allow: /
