@@ -7,13 +7,14 @@ interface Article {
   slug: string;
   image: string | null;
   description: string;
-  category_id: number;
+  category: string;
   created_at: string;
 }
 
 interface Category {
   id: number;
   name: string;
+  slug: string;
 }
 
 interface ArticleListProps {
@@ -61,7 +62,7 @@ const ArticleList: React.FC<ArticleListProps> = ({
 
     if (filterCategory) {
       filtered = filtered.filter(
-        (a) => a.category_id.toString() === filterCategory
+        (a) => a.category.toString() === filterCategory
       );
     }
 
@@ -157,7 +158,7 @@ const ArticleList: React.FC<ArticleListProps> = ({
                   >
                     <option value="">Semua Kategori</option>
                     {categories.map((cat) => (
-                      <option key={cat.id} value={cat.id}>
+                      <option key={cat.id} value={cat.slug}>
                         {cat.name}
                       </option>
                     ))}
