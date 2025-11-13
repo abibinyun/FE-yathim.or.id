@@ -18,7 +18,7 @@ interface Category {
 }
 
 interface ArticleListProps {
-  allArticles: Article[];
+  allArticles: any[];
   categories: Category[];
   currentPage: number;
   totalPages?: number;
@@ -38,8 +38,8 @@ const ArticleList: React.FC<ArticleListProps> = ({
   const STORAGE_URL = "https://sys.yathim.or.id/storage";
 
   // State tampilan
-  const [displayedArticles, setDisplayedArticles] = useState<Article[]>([]);
-  const [remainingArticles, setRemainingArticles] = useState<Article[]>([]);
+  const [displayedArticles, setDisplayedArticles] = useState<any>([]);
+  const [remainingArticles, setRemainingArticles] = useState<any>([]);
   const [filterCategory, setFilterCategory] = useState<string>("");
   const [sortOrder, setSortOrder] = useState<string>("newest");
   const [isFiltered, setIsFiltered] = useState(false);
@@ -62,13 +62,13 @@ const ArticleList: React.FC<ArticleListProps> = ({
 
     if (filterCategory) {
       filtered = filtered.filter(
-        (a) => a.category.toString() === filterCategory
+        (a) => a.article.data.category.toString() === filterCategory
       );
     }
 
     filtered.sort((a, b) => {
-      const dateA = new Date(a.created_at).getTime();
-      const dateB = new Date(b.created_at).getTime();
+      const dateA = new Date(a.article.data.created_at).getTime();
+      const dateB = new Date(b.article.data.created_at).getTime();
       return sortOrder === "newest" ? dateB - dateA : dateA - dateB;
     });
 
@@ -86,20 +86,6 @@ const ArticleList: React.FC<ArticleListProps> = ({
     setDisplayedArticles(allArticles.slice(startIndex, endIndex));
     setRemainingArticles(allArticles.slice(endIndex));
     setIsFiltered(false);
-  };
-
-  // Load more / navigasi ke halaman berikut
-  const loadMore = () => {
-    if (isFiltered) {
-      const nextBatch = remainingArticles.slice(0, PAGE_SIZE);
-      const newRemaining = remainingArticles.slice(PAGE_SIZE);
-      setDisplayedArticles((prev) => [...prev, ...nextBatch]);
-      setRemainingArticles(newRemaining);
-    } else {
-      if (nextUrl) {
-        window.location.href = nextUrl;
-      }
-    }
   };
 
   // Pagination numbers helper
@@ -219,53 +205,56 @@ const ArticleList: React.FC<ArticleListProps> = ({
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {displayedArticles.map((article) => (
-              <div
-                key={article.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full"
-              >
-                <div className="aspect-video bg-gray-200">
-                  {article.image ? (
-                    <img
-                      src={`${STORAGE_URL}/${article.image}`}
-                      alt={article.title}
-                      className="w-full h-full object-cover"
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400">
-                      <svg
-                        className="w-12 h-12"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                        />
-                      </svg>
-                    </div>
-                  )}
+            {displayedArticles.map((articles: any) => {
+              let article = articles.article.data;
+              return (
+                <div
+                  key={article.id}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow h-full"
+                >
+                  <div className="aspect-video bg-gray-200">
+                    {article.image ? (
+                      <img
+                        src={`${STORAGE_URL}/${article.image}`}
+                        alt={article.title}
+                        className="w-full h-full object-cover"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        <svg
+                          className="w-12 h-12"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-6 flex flex-col">
+                    <h3 className="font-semibold text-xl mb-2 text-gray-900 line-clamp-2">
+                      {article.title}
+                    </h3>
+                    <p className="text-gray-600 text-sm flex-1 line-clamp-3 mb-4">
+                      {article.description}
+                    </p>
+                    <a
+                      href={`/artikel/${article.slug}`}
+                      className="text-primary-600 font-medium hover:underline"
+                    >
+                      Baca Selengkapnya →
+                    </a>
+                  </div>
                 </div>
-                <div className="p-6 flex flex-col">
-                  <h3 className="font-semibold text-xl mb-2 text-gray-900 line-clamp-2">
-                    {article.title}
-                  </h3>
-                  <p className="text-gray-600 text-sm flex-1 line-clamp-3 mb-4">
-                    {article.description}
-                  </p>
-                  <a
-                    href={`/artikel/${article.slug}`}
-                    className="text-primary-600 font-medium hover:underline"
-                  >
-                    Baca Selengkapnya →
-                  </a>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Pagination */}
