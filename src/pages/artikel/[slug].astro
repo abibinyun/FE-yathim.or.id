@@ -9,10 +9,10 @@ export async function getStaticPaths() {
   let articles: any[] = [];
 
   try {
-    // Ambil semua artikel sekaligus untuk prebuild
     const articleRes = await fetch(`https://sys.yathim.or.id/api/articles/all/slug`);
     if (articleRes.ok) {
       const articleData = await articleRes.json();
+
       articles = articleData.data || [];
     }
   } catch (error) {
@@ -20,14 +20,23 @@ export async function getStaticPaths() {
     return [];
   }
 
-  // Return params + props (optimisasi build time)
-  return articles.map((article) => ({
-    params: { slug: article.slug },
-    props: { article },
+  return articles.map((articles: any) => ({
+    params: { slug: articles?.article?.data?.slug },
+    props: { 
+      articles
+    },
   }));
 }
 
-const { article } = Astro.props;
+const { 
+  articles
+} = Astro.props;
+
+
+let article = articles.article.data
+let relatedArticles = articles.related_articles
+let recommendArticles = articles.recommended_articles
+let recommendCampaign = articles.recommended_campaign
 
 if (!article) {
   return Astro.redirect("/404");
@@ -145,15 +154,88 @@ const FbPixel = article?.facebook_pixel;
           )}
         </div>
 
-        <!-- Sidebar kosong (bisa isi artikel populer / kategori nanti) -->
-        <!-- <div class="lg:col-span-1">
+        <!-- Sidebar -->
+        <div class="lg:col-span-1">
+          {recommendCampaign?.length > 0 ? 
           <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Artikel Terbaru</h3>
-            <p class="text-gray-600 text-sm">
-              Nantikan artikel inspiratif dan berita terbaru dari Yayasan Taman Harapan Insan Mulia.
-            </p>
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Donasi Pilihan</h3> 
+
+            {/* <!-- Selected Campaign Ids --> */}
+            <ul class="space-y-4">
+              {recommendCampaign?.map((campaign: any) => (
+                    <li class="flex gap-3 items-center text-gray-900">
+                      <img
+                        src={campaign.image ? `${STORAGE_URL}/${campaign.image}` : `${SITE}/images/image-yathim.jpeg`}
+                        alt={campaign.title}
+                        class="w-[79px] h-[79px] object-cover rounded"
+                      />
+                      <div class="flex-1">
+                        <a
+                          href={`/donasi/${campaign.slug}`}
+                          class="text-primary-600 hover:text-primary-700 font-semibold block"
+                        >
+                          {campaign.title.slice(0,50)}
+                        </a>
+                      </div>
+                    </li>
+                  ))}
+            </ul>
           </div>
-        </div> -->
+          : null}
+
+          <div class="bg-gray-50 p-6 rounded-lg shadow-sm">
+            <h3 class="text-lg font-semibold text-gray-900 mb-4">Artikel Rekomendasi</h3>
+
+            <!-- Selected Article Ids -->
+            <ul class="space-y-4 mb-4">
+              {recommendArticles?.length > 0
+                ? recommendArticles?.map((article: any) => (
+                    <li class="flex gap-3 items-center text-gray-900">
+                      <img
+                        src={article.image ? `${STORAGE_URL}/${article.image}` : `${SITE}/images/image-yathim.jpeg`}
+                        alt={article.title}
+                        class="w-[79px] h-[79px] object-cover rounded"
+                      />
+                      <div class="flex-1">
+                        <a
+                          href={`/artikel/${article.slug}`}
+                          class="text-primary-600 hover:text-primary-700 font-semibold block"
+                        >
+                          {article.title.slice(0,50)}
+                        </a>
+                        <p class="text-gray-600 text-sm">{article.excerpt.slice(0,100)}</p>
+                      </div>
+                    </li>
+                  ))
+                : null}
+            </ul>
+
+            <!-- Related Articles -->
+            <ul class="space-y-4">
+              {relatedArticles?.length > 0
+                ? relatedArticles?.map((article: any) => (
+                    <li class="flex gap-3 items-center text-gray-900">
+                      <img
+                        src={article.image ? `${STORAGE_URL}/${article.image}` : `${SITE}/images/image-yathim.jpeg`}
+                        alt={article.title}
+                        class="w-[79px] h-[79px] object-cover rounded"
+                      />
+                      <div class="flex-1">
+                        <a
+                          href={`/artikel/${article.slug}`}
+                          class="text-primary-600 hover:text-primary-700 font-semibold block"
+                        >
+                          {article.title.slice(0, 50)}
+                        </a>
+                        <p class="text-gray-600 text-sm">{article.excerpt.slice(0, 100)}</p>
+                      </div>
+                    </li>
+                  ))
+                : null}
+            </ul>
+          </div>
+        </div>
+
       </div>
     </div>
   </section>
